@@ -1,0 +1,55 @@
+---
+- hosts: cluster 
+  become: yes
+  gather_facts: yes
+
+  pre_tasks:
+    - name: Disable SWAP since kubernetes can't work with swap enabled
+      shell: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: remove swap from fstab
+      lineinfile:
+        path: '/etc/fstab'
+        regexp: '\sswap\s'
+        state: 'absent'
+
+    - name: Find timezone
+      command: timedatectl 
+      register: timedate_output
+      changed_when: false
+
+    - name: Set time zone
+      command: timedatectl set-timezone Europe/Moscow
+      when: '"Moscow" not in timedate_output.stdout'
+
+
+  roles:
+    - ansible-ntp-master
+    
+    - mrlesmithjr.keepalived
+    - geerlingguy.haproxy
+    - geerlingguy.docker
+    - role-kubernetes
+
+
+  post_tasks:
+    - name: Copy ansible config to $home dir
+      copy:
+        src:  /etc/kubernetes/admin.conf
+        dest: "/home/{{ ansible_user}}/.kube"
+        owner: "{{ ansible_user}}"
+        group: "{{ ansible_user}}"
+        mode: "0600"
+      delegate_to: localhost
+      when: inventory_hostname == 'cluster01'
+    
+    - name: Adding the path in the bashrc files  
+      lineinfile: 
+        dest: "/home/{{ ansible_user}}/.bashrc" 
+        line: 'export KUBECONFIG=$HOME/.kube/admin.conf' 
+        insertafter: 'EOF' 
+        regexp: 'export KUBECONFIG=$HOME/.kube/admin.conf' 
+        state: present
+      delegate_to: localhost
+      when: inventory_hostname == 'cluster01'

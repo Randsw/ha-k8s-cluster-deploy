@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-access
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: \"false\" 
+spec:
+  rules:
+  - host: prom.dep7server.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-operated
+            port:
+              number: 9090
+  - host: grafana.dep7server.com
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: prometheus-grafana
+              port:
+                number: 80

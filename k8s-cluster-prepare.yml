@@ -1,0 +1,52 @@
+- hosts: k8s_ha_cluster
+  become: yes
+  gather_facts: no
+
+  pre_tasks:
+    - name: Accept server SSH host keys
+      become: false
+      shell: |
+        ssh-keygen -F {{ ansible_host }} ||
+        ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts
+      register: known_hosts_script
+      changed_when: "'found' not in known_hosts_script.stdout"
+      delegate_to: localhost
+
+    - name: Gathering Facts
+      setup:
+
+    - name: Add a line to a file if the file does not exist, without passing regexp
+      lineinfile:
+        path: /etc/cloud/cloud-init.disabled
+        line: cloud-init=disabled
+        create: yes
+        state: present
+  
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
+
+    - name: Find timezone
+      command: timedatectl 
+      register: timedate_output
+      changed_when: false
+
+    - name: Set time zone
+      command: timedatectl set-timezone Europe/Moscow
+      when: '"Moscow" not in timedate_output.stdout'
+
+    - name: Fill /etc/hosts with hosts entry
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[item]['ansible_host'] }}  {{ item }}"
+      loop: "{{ groups['k8s_ha_cluster'] }}"
+
+    - name: debug
+      debug:
+        msg: "{{ hostvars[groups['k8s_ha_masters'][0]]['ansible_host'] }}"
+
+
+  roles:
+    - { role: ansible-ntp-master }
+    - { role: geerlingguy.haproxy, when: master_server }
+    - { role: geerlingguy.containerd }
