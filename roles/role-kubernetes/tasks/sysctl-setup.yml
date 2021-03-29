@@ -7,6 +7,13 @@
     ansible_distribution != 'Debian'
     or ansible_distribution_major_version | int < 10
 
+- name: Add proper module to kernel
+  modprobe:
+    name: "{{ item }}"
+  loop:
+    - overlay
+    - br_netfilter 
+    
 # See: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#letting-iptables-see-bridged-traffic
 - name: Let iptables see bridged traffic.
   sysctl:
@@ -16,6 +23,7 @@
   loop:
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-ip6tables
+    - net.ipv4.ip_forward  
   when: >
     ansible_distribution != 'Debian'
     or ansible_distribution_major_version | int < 10
