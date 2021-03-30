@@ -79,6 +79,10 @@
     var: kubernetes_node_join_command
   when: kubernetes_role == 'node' 
 
+- name: Wait for first master up
+  pause:
+    minutes: 2
+
 - include_tasks: other-master-setup.yml
   when: kubernetes_role == 'master'
 

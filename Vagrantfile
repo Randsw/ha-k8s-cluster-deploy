@@ -5,15 +5,10 @@ $k8s_worker_num = 3
 Vagrant.configure("2") do |config|
     config.vm.box = "generic/ubuntu1804"
     config.vm.box_check_update = false
-    # config.vm.provider "virtualbox" do |vb|
-    #     vb.gui = false
-    #     vb.memory = "2048"
-    #     vb.cpus=2
-    # end
      (1..($k8s_master_num + $k8s_worker_num)).each do |i|
         if i < $k8s_master_num + 1
             config.vm.define "master#{i}" do |node|
-                node.vm.network "public_network", ip: "192.168.29.#{130+i}", bridge: "enp0s29u1u5"
+                node.vm.network "public_network", ip: "192.168.1.#{130+i}", bridge: "wlxbcf685653648"
                 node.vm.hostname = "master#{i}"
                 node.vm.provider "virtualbox" do |vb|
                     vb.gui = false
@@ -28,7 +23,7 @@ Vagrant.configure("2") do |config|
         end
         if i > $k8s_master_num
             config.vm.define "worker#{i-$k8s_worker_num}" do |node|
-                node.vm.network "public_network", ip: "192.168.29.#{130+i}", bridge: "enp0s29u1u5"
+                node.vm.network "public_network", ip: "192.168.1.#{130+i}", bridge: "wlxbcf685653648"
                 node.vm.hostname = "worker#{i-$k8s_worker_num}"
                 node.vm.provider "virtualbox" do |vb|
                     vb.gui = false
