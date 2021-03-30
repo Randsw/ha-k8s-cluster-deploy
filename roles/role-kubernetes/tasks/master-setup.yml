@@ -1,4 +1,8 @@
 ---
+- name: Reset Old Cluster
+  shell: |
+    kubeadm reset --force
+
 - name: Initialize Kubernetes master with kubeadm init.
   command: >
     kubeadm init
@@ -13,8 +17,8 @@
 
 - name: Print the init output to screen.
   debug:
-    var: kubeadmin_init.stdout
-    verbosity: 2
+    var: kubeadmin_init.stdout_lines
+    #verbosity: 2
   when: not kubernetes_init_stat.stat.exists
 
 - name: Ensure .kube directory exists.

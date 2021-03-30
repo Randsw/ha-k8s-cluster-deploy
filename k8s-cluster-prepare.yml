@@ -22,12 +22,9 @@
  
 - hosts: k8s_ha_cluster
   become: yes
-  gather_facts: no
+  gather_facts: yes
 
   pre_tasks:
-
-    - name: Gathering Facts
-      setup:
 
     - name: Disable cloud-init
       lineinfile:
@@ -59,10 +56,6 @@
       lineinfile:
         path: /etc/hosts
         line: "{{ k8s_cp }} k8s-cp"
-
-    - name: debug
-      debug:
-        msg: "{{ hostvars[groups['k8s_ha_masters'][0]]['ansible_host'] }}"
    
     - name: Disable swap
       shell: swapoff -a

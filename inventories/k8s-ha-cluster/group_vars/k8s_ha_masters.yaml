@@ -1,7 +1,6 @@
 master_server: true
-kubernetes_apiserver_advertise_address: 'xxx'
 kubernetes_role: master
-kubernetes_join_command_extra_opts: "--control-plane"
+kubernetes_master_join_command_extra_opts: "--control-plane --certificate-key " 
 
 # Frontend settings.
 haproxy_frontend_name: 'k8s-ha-master-front'

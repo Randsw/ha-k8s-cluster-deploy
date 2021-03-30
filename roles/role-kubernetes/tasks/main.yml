@@ -44,15 +44,43 @@
   when: kubernetes_role == 'first-master'
   register: kubernetes_join_command_result
 
-- name: Set the kubeadm join command globally.
+- name: Print the init output to screen.
+  debug:
+    var: hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44]
+
+- name: Set the kubeadm other master join command 
   set_fact:
-    kubernetes_join_command: >
+    kubernetes_master_join_command: >
       {{ kubernetes_join_command_result.stdout }}
-      {{ kubernetes_join_command_extra_opts }}
+      {{ kubernetes_master_join_command_extra_opts }} 
+      {{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] }}
+  when: kubernetes_join_command_result.stdout is defined and kubernetes_role == 'first-master'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['k8s_ha_masters'] }}"
+
+- name: Print the init output to screen.
+  debug:
+    var: kubernetes_master_join_command
+  when: kubernetes_role == 'master' or kubernetes_role == 'first-master'
+
+- name: Set the kubeadm node join command
+  set_fact:
+    kubernetes_node_join_command: >
+      {{ kubernetes_join_command_result.stdout }}
+      {{ kubernetes_join_command_extra_opts }} 
   when: kubernetes_join_command_result.stdout is defined
   delegate_to: "{{ item }}"
   delegate_facts: true
-  with_items: "{{ groups['all'] }}"
+  with_items: "{{ groups['k8s_ha_workers'] }}"
+
+- name: Print the init output to screen.
+  debug:
+    var: kubernetes_node_join_command
+  when: kubernetes_role == 'node' 
+
+- include_tasks: other-master-setup.yml
+  when: kubernetes_role == 'master'
 
 - include_tasks: node-setup.yml
-  when: (kubernetes_role == 'node') or (kubernetes_role == 'master')
+  when: kubernetes_role == 'node'
