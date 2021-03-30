@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
      (1..($k8s_master_num + $k8s_worker_num)).each do |i|
         if i < $k8s_master_num + 1
             config.vm.define "master#{i}" do |node|
-                node.vm.network "public_network", ip: "192.168.1.#{110+i}", bridge: "wlxbcf685653648"
+                node.vm.network "public_network", ip: "192.168.29.#{110+i}", bridge: "enp0s29u1u5"
                 node.vm.hostname = "master#{i}"
                 #node.vm.provision "ansible" do |ansible|
                 #    ansible.verbose = "v"
@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
         end
         if i > $k8s_master_num
             config.vm.define "worker#{i-$k8s_worker_num}" do |node|
-                node.vm.network "public_network", ip: "192.168.1.#{110+i}", bridge: "wlxbcf685653648"
+                node.vm.network "public_network", ip: "192.168.29.#{110+i}", bridge: "enp0s29u1u5"
                 node.vm.hostname = "worker#{i-$k8s_worker_num}"
                 #node.vm.provision "ansible" do |ansible|
                 #    ansible.verbose = "v"
