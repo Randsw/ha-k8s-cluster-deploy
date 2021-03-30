@@ -1,6 +1,6 @@
 ansible_python_interpreter: /usr/bin/python3
 
-k8s_cp: "192.168.29.111"
+k8s_cp: "192.168.29.131"
 #k8s_cp: "192.168.29.150"
 k8s_cp_port: 8443
 
