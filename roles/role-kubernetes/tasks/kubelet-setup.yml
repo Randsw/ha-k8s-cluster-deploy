@@ -33,3 +33,7 @@
     daemon_reload: true
     name: kubelet
   when: kubelet_config_file is changed
+
+- name: Setup crictl
+  command: crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock 
+  changed_when: false

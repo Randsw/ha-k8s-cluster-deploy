@@ -28,11 +28,11 @@ kubernetes_pod_network:
   # cni: 'flannel'
   # cidr: '10.244.0.0/16'
   # Calico CNI.
-  # cni: 'calico'
-  # cidr: '192.168.0.0/16'
+  cni: 'calico'
+  cidr: '10.8.0.0/16'
   # Cillium CNI
-  cni: 'cillium'
-  cidr: '10.0.0.0/8'
+  #cni: 'cillium'
+  #cidr: '10.0.0.0/8'
 
 kubernetes_apiserver_advertise_address: '10.42.0.1'
 kubernetes_version_kubeadm: 'stable-{{ kubernetes_version }}'
@@ -50,7 +50,7 @@ kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/coreos/
 kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
 # Calico config files
-kubernetes_calico_manifest_file: https://docs.projectcalico.org/v3.10/manifests/calico.yaml
+kubernetes_calico_manifest_file: https://docs.projectcalico.org/manifests/calico.yaml
 
 #Cillium config files
 cillium_manifest_file: "https://raw.githubusercontent.com/cilium/cilium/{{ cillium_version }}/install/kubernetes/quick-install.yaml"
