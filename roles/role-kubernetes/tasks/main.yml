@@ -52,7 +52,6 @@
   set_fact:
     kubernetes_master_join_command: >
       {{ kubernetes_join_command_result.stdout }}
-      {{ kubernetes_master_join_command_extra_opts }} 
       {{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] | trim }}
   when: kubernetes_join_command_result.stdout is defined and kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"

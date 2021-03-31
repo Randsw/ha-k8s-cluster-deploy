@@ -1,5 +1,6 @@
 master_server: true
 kubernetes_role: master
+
 kubernetes_master_join_command_extra_opts: "--apiserver-advertise-address={{ kubernetes_apiserver_advertise_address }} --cri-socket  /run/containerd/containerd.sock --control-plane --certificate-key " 
 
 # Frontend settings.
