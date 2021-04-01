@@ -32,6 +32,11 @@
         line: cloud-init=disabled
         create: yes
         state: present
+
+    - name: Print ip address of VW
+      debug:
+        var:  hostvars[item]['ansible_eth1']['ipv4']['address']
+      loop: "{{ groups['all'] }}"
   
     - name: Run the equivalent of "apt-get update" as a separate step
       apt:

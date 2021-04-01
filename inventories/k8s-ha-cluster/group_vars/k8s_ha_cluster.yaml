@@ -5,3 +5,4 @@ k8s_cp: "192.168.1.131"
 k8s_cp_port: 8443
 
 kubernetes_kubeadm_init_extra_opts: "--cri-socket  /run/containerd/containerd.sock"
+used_eth_interface: "eth1"
