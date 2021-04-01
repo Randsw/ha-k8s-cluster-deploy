@@ -52,6 +52,8 @@
   set_fact:
     kubernetes_master_join_command: >
       {{ kubernetes_join_command_result.stdout }}
+      --apiserver-advertise-address {{ hostvars[item]['kubernetes_apiserver_advertise_address'] }}
+      {{ kubernetes_master_join_command_extra_opts }}
       {{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] | trim }}
   when: kubernetes_join_command_result.stdout is defined and kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"
@@ -77,6 +79,9 @@
   debug:
     var: kubernetes_node_join_command
   when: kubernetes_role == 'node' 
+
+- include_tasks: other-master-setup.yml
+  when: kubernetes_role == 'master'
 
 - include_tasks: node-setup.yml
   when: kubernetes_role == 'node'

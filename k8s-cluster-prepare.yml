@@ -8,7 +8,7 @@
       become: false
       shell: "ssh-keygen -f ~/.ssh/known_hosts -R {{ hostvars[item]['ansible_host'] }}"
       register: known_hosts_delete
-      changed_when: "'found' in known_hosts_delete.stdout"
+      changed_when: "'updated' in known_hosts_delete.stdout"
       loop: "{{ groups['k8s_ha_cluster'] }}"
 
     - name: Accept server SSH host keys

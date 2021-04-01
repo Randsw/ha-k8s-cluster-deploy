@@ -45,7 +45,7 @@
 
 - name: Copy config file for Callico networking
   copy:
-    src: calico.yml
+    src: calico.yaml
     dest: ~/calico.yml
     mode: 0644
 
