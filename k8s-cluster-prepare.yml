@@ -62,16 +62,6 @@
         path: /etc/hosts
         line: "{{ k8s_cp }} k8s-cp"
    
-    - name: Disable swap
-      shell: swapoff -a
-      when: ansible_swaptotal_mb > 0
-    
-    - name: Remowe swap from /etc/fstab
-      lineinfile:
-        path: '/etc/fstab'
-        regexp: '\sswap\s'
-        state: absent
-
   roles:
     - { role: ansible-ntp-master }
     - { role: geerlingguy.haproxy, when: master_server }

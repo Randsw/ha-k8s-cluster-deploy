@@ -1,8 +1,4 @@
 ---
-- name: Reset Old Cluster
-  shell: |
-    kubeadm reset --force
-
 - name: Initialize Kubernetes master with kubeadm init.
   command: >
     kubeadm init
@@ -56,14 +52,6 @@
   register: calico_result
   changed_when: "'created' in calico_result.stdout"
   when: kubernetes_pod_network.cni == 'calico'
-
-# - name: Configure Calico networking.
-#   command: "{{ item }}"
-#   with_items:
-#     - kubectl apply -f {{ kubernetes_calico_manifest_file }}
-#   register: calico_result
-#   changed_when: "'created' in calico_result.stdout"
-#   when: kubernetes_pod_network.cni == 'calico'
 
 - name: Get Kubernetes version for Weave installation.
   shell: kubectl version | base64 | tr -d '\n'

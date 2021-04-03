@@ -11,6 +11,16 @@
 - name: Ensure dependencies are installed.
   package: name=curl state=present
 
+- name: Disable swap
+  shell: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Remowe swap from /etc/fstab
+  lineinfile:
+    path: '/etc/fstab'
+    regexp: '\sswap\s'
+    state: absent
+
 - name: Install Kubernetes packages.
   package:
     name: "{{ item.name | default(item) }}"
@@ -33,6 +43,10 @@
     path: /etc/kubernetes/admin.conf
   register: kubernetes_init_stat
 
+- name: Reset Old Cluster on all nodes
+  command: kubeadm reset --force
+  when: kubernetes_init_stat.stat.exists
+
 # Set up firstmaster.
 - include_tasks: master-setup.yml
   when: kubernetes_role == 'first-master'
@@ -44,9 +58,14 @@
   when: kubernetes_role == 'first-master'
   register: kubernetes_join_command_result
 
-- name: Print the init output to screen.
-  debug:
-    var: hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44]
+# Very bad part. can be changed in kubeadm future version
+- name: Save join_master_certificate_key
+  set_fact:
+    master_certificate_key: "{{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] | trim }}"
+  when: kubernetes_role == 'first-master'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['k8s_ha_masters'] }}"
 
 - name: Set the kubeadm other master join command 
   set_fact:
@@ -54,7 +73,7 @@
       {{ kubernetes_join_command_result.stdout }}
       --apiserver-advertise-address {{ hostvars[item]['kubernetes_apiserver_advertise_address'] }}
       {{ kubernetes_master_join_command_extra_opts }}
-      {{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] | trim }}
+      {{ master_certificate_key }}
   when: kubernetes_join_command_result.stdout is defined and kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"
   delegate_facts: true
