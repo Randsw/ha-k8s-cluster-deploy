@@ -77,3 +77,4 @@
     - { role: geerlingguy.haproxy, when: master_server }
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
+    - { role: role-kube-vip }

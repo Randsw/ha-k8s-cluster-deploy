@@ -1,0 +1,12 @@
+---
+- name: Copy kube-vip template
+  template:
+    src: vip.yaml.j2
+    dest: /etc/kubernetes/manifests/vim.yml
+  when: inventory_hostname in groups['k8s_ha_masters']
+
+- name: Add VIP entry in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: 'k8s-cp$'
+    line: "{{ kube_vip_address }}  k8s-cp"

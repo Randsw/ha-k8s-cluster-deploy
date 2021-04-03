@@ -21,6 +21,6 @@ haproxy_backend_servers:
   - name: k8s-master1
     address: "{{ hostvars[groups['k8s_ha_masters'][0]]['ansible_host'] }}:6443"
   - name: k8s-master2
-    address: "{{ hostvars[groups['k8s_ha_masters'][0]]['ansible_host'] }}:6443"
+    address: "{{ hostvars[groups['k8s_ha_masters'][1]]['ansible_host'] }}:6443"
   - name: k8s-master3
-    address: "{{ hostvars[groups['k8s_ha_masters'][0]]['ansible_host'] }}:6443"   
+    address: "{{ hostvars[groups['k8s_ha_masters'][2]]['ansible_host'] }}:6443"   
