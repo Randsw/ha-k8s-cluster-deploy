@@ -1,18 +1,49 @@
----
-- hosts: cluster 
+- hosts: localhost
+  become: no
+  gather_facts: no
+
+  tasks: 
+
+    - name: Delete VM ssh fingerprint
+      become: false
+      shell: "ssh-keygen -f ~/.ssh/known_hosts -R {{ hostvars[item]['ansible_host'] }}"
+      register: known_hosts_delete
+      changed_when: "'updated' in known_hosts_delete.stdout"
+      loop: "{{ groups['k8s_ha_cluster'] }}"
+
+    - name: Accept server SSH host keys
+      become: false
+      shell: |
+        ssh-keyscan -H {{ hostvars[item]['ansible_host'] }} >> ~/.ssh/known_hosts
+      register: known_hosts_script
+      until: known_hosts_script.rc == 0
+      retries: 5
+      delay: 1
+      changed_when: known_hosts_script.rc != 0
+      loop: "{{ groups['k8s_ha_cluster'] }}"
+#         ssh-keygen -F {{ hostvars[item]['ansible_host'] }} ||
+ 
+- hosts: k8s_ha_cluster
   become: yes
   gather_facts: yes
 
   pre_tasks:
-    - name: Disable SWAP since kubernetes can't work with swap enabled
-      shell: swapoff -a
-      when: ansible_swaptotal_mb > 0
 
-    - name: remove swap from fstab
+    - name: Disable cloud-init
       lineinfile:
-        path: '/etc/fstab'
-        regexp: '\sswap\s'
-        state: 'absent'
+        path: /etc/cloud/cloud-init.disabled
+        line: cloud-init=disabled
+        create: yes
+        state: present
+
+    - name: Print ip address of VW
+      debug:
+        var:  hostvars[item]['ansible_eth1']['ipv4']['address']
+      loop: "{{ groups['all'] }}"
+  
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
 
     - name: Find timezone
       command: timedatectl 
@@ -23,33 +54,20 @@
       command: timedatectl set-timezone Europe/Moscow
       when: '"Moscow" not in timedate_output.stdout'
 
+    - name: Fill /etc/hosts with hosts entry
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[item]['ansible_host'] }}  {{ item }}"
+      loop: "{{ groups['k8s_ha_cluster'] }}"
 
+    - name: Add VIP entry in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ k8s_cp }}  k8s-cp"
+   
   roles:
-    - ansible-ntp-master
-    
-    - mrlesmithjr.keepalived
-    - geerlingguy.haproxy
-    - geerlingguy.docker
-    - role-kubernetes
-
-
-  post_tasks:
-    - name: Copy ansible config to $home dir
-      copy:
-        src:  /etc/kubernetes/admin.conf
-        dest: "/home/{{ ansible_user}}/.kube"
-        owner: "{{ ansible_user}}"
-        group: "{{ ansible_user}}"
-        mode: "0600"
-      delegate_to: localhost
-      when: inventory_hostname == 'cluster01'
-    
-    - name: Adding the path in the bashrc files  
-      lineinfile: 
-        dest: "/home/{{ ansible_user}}/.bashrc" 
-        line: 'export KUBECONFIG=$HOME/.kube/admin.conf' 
-        insertafter: 'EOF' 
-        regexp: 'export KUBECONFIG=$HOME/.kube/admin.conf' 
-        state: present
-      delegate_to: localhost
-      when: inventory_hostname == 'cluster01'
+    - { role: ansible-ntp-master }
+    - { role: geerlingguy.haproxy, when: haproxy_server }
+    - { role: geerlingguy.containerd }
+    - { role: role-kubernetes }
+    - { role: role-kube-vip }
