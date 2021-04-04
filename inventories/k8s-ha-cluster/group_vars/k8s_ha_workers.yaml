@@ -1,3 +1,2 @@
-master_server: false
+haproxy_server: false
 kubernetes_role: node
-kubernetes_join_command_extra_opts: "--cri-socket  /run/containerd/containerd.sock"

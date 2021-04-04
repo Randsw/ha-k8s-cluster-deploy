@@ -95,3 +95,9 @@
   when:
     - kubernetes_enable_web_ui | bool
     - kubernetes_dashboard_service is failed
+
+- name: Fetch kubeconfig from remote server
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/rand/.kube
+    flat: yes

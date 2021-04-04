@@ -60,11 +60,11 @@
     - name: Add VIP entry in /etc/hosts
       lineinfile:
         path: /etc/hosts
-        line: "{{ k8s_cp }} k8s-cp"
+        line: "{{ k8s_cp }}  k8s-cp"
    
   roles:
     - { role: ansible-ntp-master }
-    - { role: geerlingguy.haproxy, when: master_server }
+    - { role: geerlingguy.haproxy, when: haproxy_server }
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
     - { role: role-kube-vip }
