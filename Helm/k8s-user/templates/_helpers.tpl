@@ -60,3 +60,46 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create role from values
+*/}}
+{{- define "k8s_user.roles" -}}
+{{- range  .Values.user_role.rules }}  {{- range $key, $value := . }}
+{{- if eq $key "apiGroups" }}
+- {{ $key }}
+{{- else }}
+  {{ $key }}
+{{- end }}
+{{- range $value }}
+{{- if empty . }}
+  - {{ . | toString | squote }}
+{{- else }}
+  - {{ . }}
+{{- end }}
+{{- end }}
+{{- end }} 
+{{- end }}  
+{{- end }}
+
+{{/*
+Create cluster role from values
+*/}}
+{{- define "k8s_user.clusterRoles" -}}
+{{- range  .Values.cluster_role.rules }}
+{{- range $key, $value := . }}
+{{- if eq $key "apiGroups" }}
+- {{ $key }}
+{{- else }}
+  {{ $key }}
+{{- end }}
+{{- range $value }}
+{{- if empty . }}
+  - {{ . | toString | squote }}
+{{- else }}
+  - {{ . }}
+{{- end }}
+{{- end }}
+{{- end }} 
+{{- end }}  
+{{- end }}

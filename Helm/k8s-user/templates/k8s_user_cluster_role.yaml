@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Cluster
+metadata:
+  labels:
+  {{- range $key, $value := .Values.cluster_role.labels }}
+    {{ $key }} : {{ $value }}
+    {{- end }} 
+  name: {{ .Values.cluster_role.name }}
+  namespace: {{ .Values.cluster_role.namespace }}
+rules: {{ include "k8s_user.clusterRoles" . }}

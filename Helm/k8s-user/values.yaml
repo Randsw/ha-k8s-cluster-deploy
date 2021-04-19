@@ -21,7 +21,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: "role1"
 
 podAnnotations: {}
 
@@ -90,7 +90,7 @@ user_namespace1:
     user2: "second-create-resources"
     user3: "third-readonly"
 
-first_role:
+user_role:
   name: "role1"
   namespace: "namespace1"
   labels:
@@ -113,7 +113,9 @@ first_role:
     - pods
     verbs:
     - list
-Cluster_role:
+
+    
+cluster_role:
   name: "cluster-role1"
   labels:
     app: "web"

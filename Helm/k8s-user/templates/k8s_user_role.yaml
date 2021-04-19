@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+  {{- range $key, $value := .Values.user_role.labels }}
+    {{ $key }} : {{ $value }}
+    {{- end }} 
+  name: {{ .Values.user_role.name }}
+  namespace: {{ .Values.user_role.namespace }}
+rules: {{ include "k8s_user.roles" . }}
+
