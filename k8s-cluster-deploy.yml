@@ -21,7 +21,7 @@
       delay: 1
       changed_when: known_hosts_script.rc != 0
       loop: "{{ groups['k8s_ha_cluster'] }}"
-#         ssh-keygen -F {{ hostvars[item]['ansible_host'] }} ||
+
  
 - hosts: k8s_ha_cluster
   become: yes

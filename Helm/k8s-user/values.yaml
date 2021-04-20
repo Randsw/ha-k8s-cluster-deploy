@@ -102,24 +102,55 @@ user_role:
   - apiGroups:
     - ''
     resources:
+    - services
+    - endpoints
+    - nodes
+    - pods
+    - secrets
     - configmaps
     verbs:
     - get
     - list
     - watch
+    - create
+    - update
+    - patch
+    - delete
   - apiGroups:
-    - ''
+    - "extensions"
+    - "apps"
     resources:
-    - pods
+    - deployments
+    - daemonsets
+    - statefulsets
+    - replicasets
     verbs:
+    - get
     - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - networking.k8s.io
+    resources:
+    - ingresses
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
 
     
 cluster_role:
   name: "cluster-role1"
   labels:
     app: "web"
-    first-namespace: "full-access"
+    first-namespace: "readonly"
   rules:
   - apiGroups:
     - ''
@@ -127,22 +158,30 @@ cluster_role:
     - services
     - endpoints
     - nodes
+    - pods
+    - secrets
+    - configmaps
     verbs:
     - get
     - list
     - watch
   - apiGroups:
-    - ''
+    - "extensions"
+    - "apps"
     resources:
-    - events
+    - deployments
+    - daemonsets
+    - statefulsets
+    - replicasets
     verbs:
-    - create
-    - patch
+    - get
+    - list
+    - watch
   - apiGroups:
-    - policy
-    resourceNames:
-    - speaker
+    - networking.k8s.io
     resources:
-    - podsecuritypolicies
+    - ingresses
     verbs:
-    - use
+    - get
+    - list
+    - watch
