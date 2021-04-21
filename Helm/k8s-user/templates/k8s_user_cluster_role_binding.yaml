@@ -12,6 +12,6 @@ roleRef:
   kind: ClusterRole
   name: {{ .Values.cluster_role.name }}
 subjects:
-- kind: ServiceAccount
+- kind: {{ .Values.cluster_role.kind }}
   name: {{ include "k8s_user.serviceAccountName" . }}
   namespace: {{ .Values.user_namespace1.name }}

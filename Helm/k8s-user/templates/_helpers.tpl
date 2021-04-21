@@ -67,9 +67,9 @@ Create role from values
 {{- define "k8s_user.roles" -}}
 {{- range  .Values.user_role.rules }}  {{- range $key, $value := . }}
 {{- if eq $key "apiGroups" }}
-- {{ $key }}
+- {{ $key }}:
 {{- else }}
-  {{ $key }}
+  {{ $key }}:
 {{- end }}
 {{- range $value }}
 {{- if empty . }}
@@ -89,9 +89,9 @@ Create cluster role from values
 {{- range  .Values.cluster_role.rules }}
 {{- range $key, $value := . }}
 {{- if eq $key "apiGroups" }}
-- {{ $key }}
+- {{ $key }}:
 {{- else }}
-  {{ $key }}
+  {{ $key }}:
 {{- end }}
 {{- range $value }}
 {{- if empty . }}
