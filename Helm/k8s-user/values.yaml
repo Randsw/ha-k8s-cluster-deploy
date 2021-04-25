@@ -83,76 +83,13 @@ tolerations: []
 affinity: {}
 
 # Rand code
-user_namespace1: 
-  name: "namespace1"
-  labels:
-    user1: "first-user-full-access"
-    user2: "second-create-resources"
-    user3: "third-readonly"
-
-user_role:
-  name: "namespace1-role1"
-  namespace: "namespace1"
-  kind: User
-  labels:
-    app: "web"
-    first-namespace: "full-access"
-    second-namespace: "create-resources"
-    third-namespace: "read-only"
-  rules:
-  - apiGroups:
-    - ''
-    resources:
-    - services
-    - endpoints
-    - nodes
-    - pods
-    - secrets
-    - configmaps
-    verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-  - apiGroups:
-    - "extensions"
-    - "apps"
-    resources:
-    - deployments
-    - daemonsets
-    - statefulsets
-    - replicasets
-    verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-  - apiGroups:
-    - networking.k8s.io
-    resources:
-    - ingresses
-    verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-
-    
-cluster_role:
+ns_admin_cluster_role:
   name: "cluster-role1"
   kind: User
+  namespace: "namespace1"
+  default_role: view 
   labels:
     app: "web"
-    first-namespace: "readonly"
   rules:
   - apiGroups:
     - ''
@@ -187,3 +124,152 @@ cluster_role:
     - get
     - list
     - watch
+
+ns_users:
+  - ns_admin_role:
+    name: "namespace1-admin"
+    namespace: "namespace1"
+    kind: User
+    default_role: admin 
+    labels:
+      app: "web"
+    rules:
+    - apiGroups:
+      - ''
+      resources:
+      - services
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+      - configmaps
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+    - apiGroups:
+      - "extensions"
+      - "apps"
+      resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      - replicasets
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+    - apiGroups:
+      - networking.k8s.io
+      resources:
+      - ingresses
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - ns_dev_role:
+    name: "namespace1-dev"
+    namespace: "namespace1"
+    kind: User
+    default_role: edit 
+    labels:
+      app: "web"
+    rules:
+    - apiGroups:
+      - ''
+      resources:
+      - services
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+      - configmaps
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+    - apiGroups:
+      - "extensions"
+      - "apps"
+      resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      - replicasets
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+    - apiGroups:
+      - networking.k8s.io
+      resources:
+      - ingresses
+      verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - ns_reporter_role:
+    name: "namespace1-reporter"
+    namespace: "namespace1"
+    kind: User
+    default_role: view 
+    labels:
+      app: "web"
+    rules:
+    - apiGroups:
+      - ''
+      resources:
+      - services
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+      - configmaps
+      verbs:
+      - get
+      - list
+      - watch
+    - apiGroups:
+      - "extensions"
+      - "apps"
+      resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      - replicasets
+      verbs:
+      - get
+      - list
+      - watch
+    - apiGroups:
+      - networking.k8s.io
+      resources:
+      - ingresses
+      verbs:
+      - get
+      - list
+      - watch

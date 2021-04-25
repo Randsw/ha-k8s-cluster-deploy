@@ -65,7 +65,8 @@ Create the name of the service account to use
 Create role from values
 */}}
 {{- define "k8s_user.roles" -}}
-{{- range  .Values.user_role.rules }}  {{- range $key, $value := . }}
+{{- range  .rules }}  
+{{- range $key, $value := . }}
 {{- if eq $key "apiGroups" }}
 - {{ $key }}:
 {{- else }}
@@ -86,7 +87,7 @@ Create role from values
 Create cluster role from values
 */}}
 {{- define "k8s_user.clusterRoles" -}}
-{{- range  .Values.cluster_role.rules }}
+{{- range  .Values.ns_admin_cluster_role.rules }}
 {{- range $key, $value := . }}
 {{- if eq $key "apiGroups" }}
 - {{ $key }}:

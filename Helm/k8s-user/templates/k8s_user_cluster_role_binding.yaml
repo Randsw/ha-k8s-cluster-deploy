@@ -3,15 +3,19 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-  {{- range $key, $value := .Values.cluster_role.labels }}
+  {{- range $key, $value := .Values.ns_admin_cluster_role.labels }}
     {{ $key }} : {{ $value }}
     {{- end }}
-  name: {{ .Values.cluster_role.name }}
+  name: {{ .Values.ns_admin_cluster_role.name }}-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ .Values.cluster_role.name }}
+{{- if .Values.ns_admin_cluster_role.default_role }}
+  name: {{ .Values.ns_admin_cluster_role.default_role }}
+{{- else }}
+  name: {{ .Values.ns_admin_cluster_role.name}}
+{{- end }}
 subjects:
-- kind: {{ .Values.cluster_role.kind }}
-  name: {{ include "k8s_user.serviceAccountName" . }}
-  namespace: {{ .Values.user_namespace1.name }}
+- kind: {{ .Values.ns_admin_cluster_role.kind }}
+  name: {{ .Values.ns_admin_cluster_role.name }}
+  namespace: {{ .Values.ns_admin_cluster_role.namespace }}
