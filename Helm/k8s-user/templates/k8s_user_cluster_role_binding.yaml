@@ -18,4 +18,4 @@ roleRef:
 subjects:
 - kind: {{ .Values.ns_admin_cluster_role.kind }}
   name: {{ .Values.ns_admin_cluster_role.name }}
-  namespace: {{ .Values.ns_admin_cluster_role.namespace }}
+  apiGroup: rbac.authorization.k8s.io

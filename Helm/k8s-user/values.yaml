@@ -84,7 +84,7 @@ affinity: {}
 
 # Rand code
 ns_admin_cluster_role:
-  name: "cluster-role1"
+  name: "namespace1-admin"
   kind: User
   namespace: "namespace1"
   default_role: view 

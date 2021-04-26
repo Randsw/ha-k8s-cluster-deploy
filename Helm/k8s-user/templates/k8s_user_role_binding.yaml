@@ -9,6 +9,7 @@ metadata:
     {{ $key }} : {{ $value }}
     {{- end }}
   name: {{ .name }}-binding
+  namespace: {{ .namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -20,5 +21,5 @@ roleRef:
 subjects:
 - kind: {{ .kind }}
   name: {{ .name }}
-  namespace: {{ .namespace }}
+  apiGroup: rbac.authorization.k8s.io
 {{- end }}
