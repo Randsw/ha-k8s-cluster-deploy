@@ -240,6 +240,11 @@ spec:
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/worker
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/gw
+      
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -291,3 +296,6 @@ spec:
         runAsUser: 65534
       serviceAccountName: controller
       terminationGracePeriodSeconds: 0
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/worker

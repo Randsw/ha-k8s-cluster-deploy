@@ -1,0 +1,2 @@
+ingress_taint: node-role.kubernetes.io/gw
+controller_kind: DaemonSet

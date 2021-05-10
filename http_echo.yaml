@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banana-app
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: banana
+  template:
+    metadata:
+      labels:
+        app: banana
+    spec:
+      containers:
+      - name: banana
+        image: hashicorp/http-echo
+        args:
+          - "-text=banana"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/worker
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: banana-service
+  namespace: default
+spec:
+  selector:
+    app: banana
+  ports:
+    - port: 5678 # Default port for image
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apple-app
+  namespace: default
+  labels:
+    app: apple
+spec:
+  selector:
+    matchLabels:
+      app: apple
+  template:
+    metadata:
+      labels:
+        app: apple
+    spec:
+      containers:
+      - name: apple
+        image: hashicorp/http-echo
+        args:
+          - "-text=apple"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/worker
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: apple-service
+  namespace: default
+spec:
+  selector:
+    app: apple
+  ports:
+    - port: 5678 # Default port for image
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: echo.example.com
+    http:
+      paths:
+        - path: /apple
+          pathType: Prefix
+          backend:
+            service:
+              name: apple-service
+              port: 
+                number: 5678
+        - path: /banana
+          pathType: Prefix
+          backend:
+            service:
+              name: banana-service
+              port: 
+                number: 5678

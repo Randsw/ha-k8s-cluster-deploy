@@ -21,11 +21,8 @@ Deploy Ingress-nginx-controller as daemon set on gw1 and gw2. Deploy Metalllb. C
 
 TODO:
  1. edit port in kubeconfig file 6443->8443
- 2. Label all worker and gw nodes -> worker[1:3] and gw[1:2]
- 3. Deploy Metallb using Helm
- 4. Deploy ingress as daemonset on gw1 and gw2 using Helm
- 5. Deploy Rancher Local Path Provisioner using Helm
- 6. Deploy Vault in k8s 
- 7. Add TLS cert and key to vault
- 8. Inject cert and key from vault to ingress
+ 2. Deploy Vault in k8s 
+ 3. Turn on Vault PKIaaS
+ 4. Deploy cert manager in k8s
+ 4. Inject cert and key from vault to ingress using cert manager
  

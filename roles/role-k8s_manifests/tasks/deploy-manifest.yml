@@ -6,10 +6,11 @@
     manifest_namespace: "{{ outer_item.namespace | default('') }}"
 
 - name: Print current manifest directory.
-  debug: var=manifest_directory
+  debug: 
+    var: manifest_directory
 
 - name: Ensure manifest-specific namespace exists.
-  k8s:
+  community.kubernetes.k8s:
     api_version: v1
     kind: Namespace
     name: "{{ manifest_namespace }}"
@@ -25,7 +26,7 @@
       skip: true
 
 - name: Deploy the resources defined inside the manifest.
-  k8s:
+  community.kubernetes.k8s:
     definition: "{{ item }}"
     kubeconfig: "{{ k8s_kubeconfig }}"
     state: "{{ k8s_manifests_state }}"

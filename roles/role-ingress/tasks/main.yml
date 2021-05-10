@@ -1,0 +1,29 @@
+---
+- name: Add stable chart repo
+  community.kubernetes.helm_repository:
+    name: ingress-nginx
+    repo_url: "https://kubernetes.github.io/ingress-nginx"
+
+- name: Update helm repo
+  command: helm repo update
+
+- name: Deploy ingress nginx chart inside ingress-nginx namespace with values
+  community.kubernetes.helm:
+    name: ingress-nginx
+    chart_ref: ingress-nginx/ingress-nginx
+    release_namespace: ingress-nginx
+    create_namespace: yes
+    force: yes
+    values:
+      controller:
+        kind: "{{ controller_kind }}"
+        tolerations:
+        - effect: NoSchedule
+          key: "{{ ingress_taint }}"
+        admissionWebhooks:
+          patch:
+            tolerations:
+            - effect: NoSchedule
+              key: "{{ ingress_taint }}"
+      
+

@@ -21,6 +21,11 @@
       delay: 1
       changed_when: known_hosts_script.rc != 0
       loop: "{{ groups['k8s_ha_cluster'] }}"
+    
+    - name: Create dir for kubeconfig
+      file:
+        path: ~/.kube
+        state: directory
 
  
 - hosts: k8s_ha_cluster
@@ -64,6 +69,19 @@
       lineinfile:
         path: /etc/hosts
         line: "{{ k8s_cp }}  k8s-cp"
+
+    - name: Install nessesary package
+      block:
+        - name: Install pip
+          apt:
+            name: python-pip
+            state: present
+            update_cache: yes
+        
+        - name: Install openshift
+          pip:
+            name: openshift
+      when: kubernetes_role == 'first-master'
    
   roles:
     - { role: ansible-ntp-master }
@@ -71,3 +89,6 @@
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
     - { role: role-kube-vip }
+    - { role: role-helm, when: kubernetes_role == 'first-master'}
+    - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
+    - { role: role-ingress, when: kubernetes_role == 'first-master'}

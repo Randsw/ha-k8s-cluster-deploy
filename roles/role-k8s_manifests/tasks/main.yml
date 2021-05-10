@@ -12,7 +12,7 @@
     - k8s_resource_namespace | default(true)
 
 - name: Ensure namespace exists.
-  k8s:
+  community.kubernetes.k8s:
     api_version: v1
     kind: Namespace
     name: "{{ k8s_resource_namespace }}"
@@ -25,3 +25,14 @@
   loop: "{{ k8s_manifests }}"
   loop_control:
     loop_var: outer_item
+
+- name: Check for metallb memberlist secret
+  command: kubectl describe secret memberlist -n metallb-system
+  register: metallb_secret
+  changed_when: false
+  ignore_errors: yes
+
+- name: Create metallb memberlist secret if not present
+  command: 'kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"'
+  when: metallb_secret.rc == 1
+  

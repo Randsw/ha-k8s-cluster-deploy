@@ -1,0 +1,37 @@
+- hosts: k8s_ha_cluster
+  become: yes
+  gather_facts: yes
+
+  pre_tasks:
+    # - name: Add taints to gw nodes
+    #   command: kubectl taint nodes {{ node }} {{ kubernetes_gw_taints }}
+    #   loop: "{{ groups['k8s_ha_gateway'] }}"
+    #   loop_control:
+    #     loop_var: node
+    #   when: kubernetes_role == 'first-master'
+
+    # - name: Add taints to worker nodes
+    #   command: kubectl taint nodes {{ node }} {{ kubernetes_worker_taints }}
+    #   loop: "{{ groups['k8s_ha_workers'] }}"
+    #   loop_control:
+    #     loop_var: node
+    #   when: kubernetes_role == 'first-master'
+      
+    # - name: Install nessesary package
+    #   block:
+    #     - name: Install pip
+    #       apt:
+    #         name: python3-pip
+    #         state: present
+    #         update_cache: yes
+        
+    #     - name: Install openshift
+    #       pip:
+    #         name: openshift
+    #   when: kubernetes_role == 'first-master'
+
+
+  roles:
+    - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
+    - { role: role-helm, when: kubernetes_role == 'first-master'}
+    - { role: role-ingress, when: kubernetes_role == 'first-master'}

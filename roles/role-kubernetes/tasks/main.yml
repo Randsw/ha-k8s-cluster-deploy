@@ -9,7 +9,9 @@
   when: ansible_os_family == 'Debian'
 
 - name: Ensure dependencies are installed.
-  package: name=curl state=present
+  package: 
+    name: curl 
+    state: present
 
 - name: Disable swap
   shell: swapoff -a
@@ -104,3 +106,17 @@
 
 - include_tasks: node-setup.yml
   when: kubernetes_role == 'node'
+
+- name: Add taints to gw nodes
+  command: kubectl taint nodes {{ node }} {{ kubernetes_gw_taints }}
+  loop: "{{ groups['k8s_ha_gateway'] }}"
+  loop_control:
+    loop_var: node
+  when: kubernetes_role == 'first-master'
+
+- name: Add taints to worker nodes
+  command: kubectl taint nodes {{ node }} {{ kubernetes_worker_taints }}
+  loop: "{{ groups['k8s_ha_workers'] }}"
+  loop_control:
+    loop_var: node
+  when: kubernetes_role == 'first-master'

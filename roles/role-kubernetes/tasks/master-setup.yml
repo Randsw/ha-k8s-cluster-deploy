@@ -30,6 +30,12 @@
     state: link
     mode: 0644
 
+- name: Get kubeadm file
+  fetch:
+    dest: /etc/kubernetes/admin.conf
+    src: /home/{{ localhost_user }}/.kube/
+    flat: yes
+
 - name: Configure Flannel networking.
   command: "{{ item }}"
   with_items:

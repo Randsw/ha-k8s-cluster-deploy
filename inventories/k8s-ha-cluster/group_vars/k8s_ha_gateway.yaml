@@ -2,6 +2,7 @@
 haproxy_server: true
 kubernetes_role: node
 
+
 # Frontend settings.
 haproxy_frontend_name: 'k8s-ha-apiserver-ext'
 haproxy_frontend_bind_address: '*'
