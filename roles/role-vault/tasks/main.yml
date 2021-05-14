@@ -1,0 +1,155 @@
+---
+- name: Add Vault chart repo
+  community.kubernetes.helm_repository:
+    name: hashicorp
+    repo_url: "https://helm.releases.hashicorp.com"
+
+- name: Update helm repo
+  command: helm repo update
+
+- name: Deploy Vault chart inside Vault namespace with values
+  community.kubernetes.helm:
+    name: vault
+    chart_ref: hashicorp/vault
+    release_namespace: vault
+    create_namespace: yes
+    force: yes
+    values:
+      injector:
+        tolerations: |
+          - key: node-role.kubernetes.io/gw
+            effect: NoSchedule
+      server:
+        tolerations: |
+          - key: node-role.kubernetes.io/gw
+            effect: NoSchedule
+        # ha:
+        #   enabled: true
+        #   replicas: 3
+        #   raft:
+        #     enabled: true
+
+- name: Pause for 1 minutes for vault images downloaded and started
+  pause:
+    minutes: 1
+    prompt: "Wait for Helm release is initialized"
+
+- name: Wait for vault pods become ready
+  shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=60s"
+  register: vault_ready
+
+- name: Debug vault init result
+  debug:
+    var: vault_ready
+
+- name: Init vault operator
+  shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/demo-keys.json"
+  register: vault_init_result
+  when: vault_ready
+
+- name: Get unseal key from output
+  set_fact:
+    root_token: "{{ vault_init_result.stdout | from_json | json_query('root_token') }}"
+    unseal_key: "{{ vault_init_result.stdout | from_json | json_query('unseal_keys_b64') }}"
+
+- name: Debug vault init result
+  debug:
+    var: root_token
+
+- name: Debug vault init result
+  debug:
+    var: unseal_key
+
+- name: Define VAULT_TOKEN env variable
+  command: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}"'
+
+- include_tasks: unseal_vault.yml
+  loop: "{{ vault_pod_names }}"
+  loop_control:
+    loop_var: pod_name
+
+- name: Enable k8s Auth Metod
+  shell: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}; vault auth enable kubernetes"'
+
+- name: Configure k8s Auth Metod
+  shell: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}; vault write auth/kubernetes/config
+            token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+            kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
+            kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"'
+
+- name: Create pki policy for k8s
+  shell: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}; vault policy write pki - <<EOF
+          path "pki*"                              { capabilities = ["read", "list"] }
+          path "pki/roles/{{ pki_policy_name }}"   { capabilities = ["create", "update"] }
+          path "pki/sign/{{ pki_policy_name }}"    { capabilities = ["create", "update"] }
+          path "pki/issue/{{ pki_policy_name }}"   { capabilities = ["create"] }
+          EOF"'
+
+# - name: Create pki policy for k8s
+#   community.kubernetes.k8s_exec:
+#     namespace: vault
+#     pod: vault-0
+#     command: 'vault policy write pki - <<EOF
+#               path "pki*"                              { capabilities = ["read", "list"] }
+#               path "pki/roles/{{ pki_policy_name }}"   { capabilities = ["create", "update"] }
+#               path "pki/sign/{{ pki_policy_name }}"    { capabilities = ["create", "update"] }
+#               path "pki/issue/{{ pki_policy_name }}"   { capabilities = ["create"] }
+#               EOF'
+#     kubeconfig: "{{ k8s_kubeconfig }}"
+
+- name: Create k8s Auth role
+  shell: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}; vault write auth/kubernetes/role/{{ k8s_auth_role_name }}
+          bound_service_account_names={{ k8s_sa_name }} 
+          bound_service_account_namespaces={{ k8s_namespace}} 
+          policies=pki"'
+
+# - name: Create k8s Auth role
+#   community.kubernetes.k8s_exec:
+#     namespace: vault
+#     pod: vault-0
+#     command: 'vault write auth/kubernetes/role/{{ k8s_auth_role_name }} 
+#               bound_service_account_names={{ k8s_sa_name }} 
+#               bound_service_account_namespaces={{ k8s_namespace}} 
+#               policies=pki'
+#     kubeconfig: "{{ k8s_kubeconfig }}"
+
+- name: Enable Vault pki secret engine
+  community.kubernetes.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: 'export VAULT_TOKEN={{ root_token }}; vault secrets enable pki'
+    kubeconfig: "{{ k8s_kubeconfig }}"
+
+- name: Generate root CA (and write to file)
+  community.kubernetes.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: 'vault write -format=json pki/root/generate/internal 
+              common_name={{ root_ca_name }} > /tmp/{{ root_ca_cert_name }}.json'
+    kubeconfig: "{{ k8s_kubeconfig }}"
+
+- name: Get root CA file
+  fetch:
+    dest: /tmp/{{ root_ca_cert_name }}.json
+    src: /home/{{ localhost_user }}/.kube/root_ca_cert_name
+    flat: yes
+
+- name: Configure pki api endpoints
+  community.kubernetes.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: 'vault write pki/config/urls \
+             issuing_certificates="http://vault.vault:8200/v1/pki/ca" \
+             crl_distribution_points="http://vault.vault:8200/v1/pki/crl"'
+    kubeconfig: "{{ k8s_kubeconfig }}"
+
+- name: Configure pki api endpoints
+  community.kubernetes.k8s_exec:
+    namespace: vault
+    pod: vault-0
+    command: 'vault write pki/roles/{{ pki_role }} \
+              allowed_domains={{ domain_name }} \
+              allow_subdomains={{ allow_subdomains }} \
+              max_ttl={{ max_cert_ttl }}'
+    kubeconfig: "{{ k8s_kubeconfig }}"
+     

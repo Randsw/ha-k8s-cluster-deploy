@@ -1,0 +1,16 @@
+---
+k8s_kubeconfig: /home/cluster01/.kube/admin.conf
+pki_policy_name: echo-example-com
+k8s_auth_role_name: issuer
+k8s_sa_name: issuer
+k8s_namespace: namespace1
+root_ca_name: "Demo Root Certificate Authority"
+root_ca_cert_name: "demo-root-ca"
+pki_role: "example-dot-com"
+domain_name: "example.com"
+allow_subdomains: "true"
+max_cert_ttl: "15m"
+vault_pod_names:
+  - vault-0
+#  - vault-1
+#  - vault-2

@@ -1,0 +1,11 @@
+---
+# - name: Unseal vault
+#   community.kubernetes.k8s_exec:
+#     namespace: vault
+#     pod: "{{ pod_name }}"
+#     kubeconfig: "{{ k8s_kubeconfig }}"
+#     command: "vault operator unseal {{ item }}"
+#   loop: "{{ unseal_key }}"
+- name: Unseal vault
+  command: "kubectl exec vault-0 -n vault -- vault operator unseal {{ item }}"
+  loop: "{{ unseal_key }}"

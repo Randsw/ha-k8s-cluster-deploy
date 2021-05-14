@@ -1,5 +1,5 @@
-- hosts: k8s_ha_cluster
-  become: yes
+- hosts: localhost
+  #become: yes
   gather_facts: yes
 
   pre_tasks:
@@ -32,6 +32,7 @@
 
 
   roles:
-    - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
-    - { role: role-helm, when: kubernetes_role == 'first-master'}
-    - { role: role-ingress, when: kubernetes_role == 'first-master'}
+    # - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
+    # - { role: role-helm, when: kubernetes_role == 'first-master'}
+    # - { role: role-ingress, when: kubernetes_role == 'first-master'}
+    - { role: role-vault, when kubernetes role == 'minikube'}
