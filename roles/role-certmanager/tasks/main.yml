@@ -1,0 +1,57 @@
+- name: Add cert-manager chart repo
+  community.kubernetes.helm_repository:
+    name: jetstack
+    repo_url: "https://charts.jetstack.io"
+
+- name: Update helm repo
+  command: helm repo update
+
+- name: Deploy cert-manager chart inside cert-manager namespace with values
+  community.kubernetes.helm:
+    name: cert-manager
+    chart_ref: jetstack/cert-manager
+    release_namespace: cert-manager
+    create_namespace: yes
+    force: yes
+    values:
+      installCRDs: true
+      replicaCount: 3
+      tolerations:
+        - key: node-role.kubernetes.io/gw
+          effect: NoSchedule
+      webhook:
+        replicaCount: 2
+        tolerations:
+          - key: node-role.kubernetes.io/gw
+            effect: NoSchedule
+      cainjector:
+        replicaCount: 2
+        tolerations:
+          - key: node-role.kubernetes.io/gw
+            effect: NoSchedule    
+
+- name: Create issuer SA
+  community.kubernetes.k8s:
+    name: "{{ k8s_sa_name }}"
+    api_version: v1
+    kind: ServiceAccount
+    namespace: cert-manager
+    state: present
+
+- name: Get Token of service account
+  shell: 'kubectl get serviceaccount {{ k8s_sa_name }} -n cert-manager -o json | jq -r ".secrets[].name"'
+  register: issuer_sa_token
+
+- name: Put sa token in variable
+  set_fact:
+    ISSUER_SECRET_REF: "{{ issuer_sa_token.stdout }}"
+
+- name: Deploy Issuer
+  community.kubernetes.k8s:
+    state: present
+    template: 'roles/role-certmanager/issuer.yaml.j2'
+
+- name: Deploy Certificate
+  community.kubernetes.k8s:
+    state: present
+    template: 'roles/role-certmanager/certificate.yaml.j2'    

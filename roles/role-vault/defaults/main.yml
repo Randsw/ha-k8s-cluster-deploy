@@ -14,3 +14,4 @@ vault_pod_names:
   - vault-0
 #  - vault-1
 #  - vault-2
+pki_policy_filename: /tmp/pki_policy.hcl

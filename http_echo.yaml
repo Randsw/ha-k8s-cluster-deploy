@@ -1,8 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: test-application
+  name: namespace1
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: banana-app
-  namespace: default
+  namespace: namespace1
 spec:
   selector:
     matchLabels:
@@ -30,7 +38,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: banana-service
-  namespace: default
+  namespace: namespace1
 spec:
   selector:
     app: banana
@@ -42,7 +50,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: apple-app
-  namespace: default
+  namespace: namespace1
   labels:
     app: apple
 spec:
@@ -72,7 +80,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: apple-service
-  namespace: default
+  namespace: namespace1
 spec:
   selector:
     app: apple
@@ -84,10 +92,14 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: example-ingress
-  namespace: default
+  namespace: namespace1
   annotations:
     ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+  - hosts:
+      - echo.example.com
+    secretName: echo-example-com-tls
   rules:
   - host: echo.example.com
     http:

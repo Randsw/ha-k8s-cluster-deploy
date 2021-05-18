@@ -1,0 +1,7 @@
+---
+cert_name: echo-example-com
+k8s_namespace: namespace1
+secret_name: echo-example-com-tls
+server_name: echo.example.com 
+issuer_name: vault-issuer-echo
+k8s_sa_name: issuer
