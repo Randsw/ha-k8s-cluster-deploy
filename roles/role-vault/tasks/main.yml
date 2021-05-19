@@ -78,11 +78,17 @@
     src: vault_init.sh.j2
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: 0777
+    mode: 0555
   delegate_to: localhost
 
 - name: Copy file to pod
   shell: kubectl cp /tmp/vault_init.sh vault-0:/tmp/vault_init.sh -n vault
+
+- name: Delete tmp file
+  file:
+    dest: /tmp/vault_init.sh
+    state: absent
+  delegate_to: localhost
 
 - name: Execute vault init script
   shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/vault_init.sh"

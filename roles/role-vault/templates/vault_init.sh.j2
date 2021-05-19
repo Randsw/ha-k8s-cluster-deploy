@@ -25,7 +25,7 @@ vault write auth/kubernetes/role/{{ k8s_auth_role_name }} \
 vault secrets enable pki
 
 vault write -format=json pki/root/generate/internal \
-    common_name="{{ root_ca_name }}" > /tmp/{{ root_ca_cert_name }}.json
+    common_name="{{ root_ca_name }}" > /tmp/{{ root_ca_cert_filename }}.json
 
 vault write pki/config/urls \
     issuing_certificates="http://vault.vault:8200/v1/pki/ca" \

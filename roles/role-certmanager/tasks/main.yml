@@ -28,30 +28,77 @@
         replicaCount: 2
         tolerations:
           - key: node-role.kubernetes.io/gw
-            effect: NoSchedule    
+            effect: NoSchedule  
+
+- name: Wait for vault pods become ready
+  shell: "kubectl wait --namespace=cert-manager --for=condition=Ready --all pods --timeout=60s"
+  register: vault_ready
 
 - name: Create issuer SA
   community.kubernetes.k8s:
     name: "{{ k8s_sa_name }}"
     api_version: v1
     kind: ServiceAccount
-    namespace: cert-manager
+    namespace: "{{ k8s_namespace }}"
     state: present
 
+- name: Pause for 1 minutes for cert-manager sign his certificate
+  pause:
+    minutes: 1
+    prompt: "Wait for Cert-manager become ready"
+
 - name: Get Token of service account
-  shell: 'kubectl get serviceaccount {{ k8s_sa_name }} -n cert-manager -o json | jq -r ".secrets[].name"'
+  shell: 'kubectl get serviceaccount {{ k8s_sa_name }} -n {{ k8s_namespace }} -o json | jq -r ".secrets[].name"'
   register: issuer_sa_token
 
 - name: Put sa token in variable
   set_fact:
     ISSUER_SECRET_REF: "{{ issuer_sa_token.stdout }}"
 
+- name: Debug token
+  debug:
+    var: ISSUER_SECRET_REF
+    
 - name: Deploy Issuer
   community.kubernetes.k8s:
     state: present
-    template: 'roles/role-certmanager/issuer.yaml.j2'
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: Issuer
+      metadata:
+        name: "{{ issuer_name }}"
+        namespace: "{{ k8s_namespace }}"
+      spec:
+        vault:
+          server: http://vault.vault
+          path: pki/sign/{{ pki_role }}
+          auth:
+            kubernetes:      
+              mountPath: /v1/auth/kubernetes
+              role: "{{ k8s_auth_role_name }}"
+              secretRef:
+                name: "{{ ISSUER_SECRET_REF }}"
+                key: token      
+      
+#    template: 'roles/role-certmanager/issuer.yaml.j2'
 
 - name: Deploy Certificate
   community.kubernetes.k8s:
     state: present
-    template: 'roles/role-certmanager/certificate.yaml.j2'    
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: Certificate
+      metadata:
+        name: "{{ cert_name }}"
+        namespace: "{{ k8s_namespace }}"
+      spec:
+        secretName: "{{ secret_name }}"
+        issuerRef:
+          name: "{{ issuer_name }}"
+        commonName: "{{ server_name }}"
+        dnsNames:
+        - "{{ server_name }}"    
+    
+    
+#    template: 'roles/role-certmanager/certificate.yaml.j2'    
+#"{{ lookup('template', '/testing/deployment.yml') | from_yaml }}"
