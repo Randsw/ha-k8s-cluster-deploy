@@ -41,10 +41,11 @@
     kind: ServiceAccount
     namespace: "{{ k8s_namespace }}"
     state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
 
 - name: Pause for 1 minutes for cert-manager sign his certificate
   pause:
-    minutes: 1
+    minutes: "1"
     prompt: "Wait for Cert-manager become ready"
 
 - name: Get Token of service account
@@ -62,6 +63,7 @@
 - name: Deploy Issuer
   community.kubernetes.k8s:
     state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
     definition:
       apiVersion: cert-manager.io/v1alpha2
       kind: Issuer
@@ -85,6 +87,7 @@
 - name: Deploy Certificate
   community.kubernetes.k8s:
     state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
     definition:
       apiVersion: cert-manager.io/v1alpha2
       kind: Certificate

@@ -31,7 +31,7 @@
 
 - name: Pause for 1 minutes for vault images downloaded and started
   pause:
-    minutes: 1
+    minutes: "1"
     prompt: "Wait for Helm release is initialized"
 
 - name: Wait for vault pods become ready
