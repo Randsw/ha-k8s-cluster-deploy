@@ -1,5 +1,4 @@
 ansible_python_interpreter: /usr/bin/python3
-# '{{ ansible_playbook_python }}'
 
 k8s_cp: "192.168.1.131"
 #k8s_cp: "192.168.1.150"

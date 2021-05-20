@@ -1,0 +1,17 @@
+{{- range $i, $hosts := .Values.ingress.hosts -}}
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: {{ .host }}-issuer
+spec:
+  vault:
+    server: {{ $.Values.issuer.vault_address }}
+    path: pki/sign/{{ $.Values.issuer.vault_pki_role }}
+    auth:
+      kubernetes:      
+        mountPath: /v1/auth/kubernetes
+        role: {{ include "echo-app.serviceAccountName" $ }}
+        secretRef:
+          name: {{ $.Values.issuer.sa_token}}
+          key: token 
+{{- end -}}

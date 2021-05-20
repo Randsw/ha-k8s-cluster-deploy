@@ -36,4 +36,6 @@ allow_subdomains: "true"
 #Maximum certificate ttl
 max_cert_ttl: "15m"
 
+localhost_user: cluster01
+
 

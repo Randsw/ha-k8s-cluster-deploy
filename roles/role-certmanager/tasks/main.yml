@@ -77,12 +77,14 @@
           auth:
             kubernetes:      
               mountPath: /v1/auth/kubernetes
-              role: "{{ k8s_auth_role_name }}"
+              role: "{{ k8s_sa_name }}"
               secretRef:
                 name: "{{ ISSUER_SECRET_REF }}"
                 key: token      
-      
-#    template: 'roles/role-certmanager/issuer.yaml.j2'
+
+kubectl get issuer echo.example.com-issuer -n namespace1 -o json \
+    | jq '.spec.vault.auth.kubernetes.secretRef.name = "se"' \
+    | kubectl replace -f -
 
 - name: Deploy Certificate
   community.kubernetes.k8s:
@@ -101,7 +103,7 @@
         commonName: "{{ server_name }}"
         dnsNames:
         - "{{ server_name }}"    
-    
-    
-#    template: 'roles/role-certmanager/certificate.yaml.j2'    
-#"{{ lookup('template', '/testing/deployment.yml') | from_yaml }}"
+
+
+satoken=$(kubectl get serviceaccount issuer -n namespace1 -o json | jq -r '.secrets[].name')'
+kubectl get issuer echo.example.com-issuer -n namespace1 -o json | jq --arg bashvar "$satoken" '.spec.vault.auth.kubernetes.secretRef.name = $bashvar' | kubectl replace -f -

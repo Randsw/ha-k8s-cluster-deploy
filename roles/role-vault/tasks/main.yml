@@ -43,29 +43,37 @@
     var: vault_ready
 
 - name: Init vault operator
-  shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/demo-keys.json"
+  shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/vault-unseal-keys.json"
   register: vault_init_result
   when: vault_ready.stdout.find("condition met") != -1
-  
-- name: Debug vault init result
-  debug:
-    var: vault_init_result
+
+- name: Get Vault unseal key to ansible executor host
+  command: "kubectl cp vault/vault-0/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"
+  when: vault_init_result.stdout.find("unseal_keys_b64") != -1
+
+- name: Fetch Vault unseal key file to ansible host
+  fetch:
+    src: /tmp/vault-unseal-keys.json
+    dest: /home/{{ localhost_user }}/
+    flat: yes
+
+- name: Set Vault unseal key file mode
+  file: 
+    path: /home/{{ localhost_user }}/vault-unseal-keys.json
+    owner: "{{ localhost_user }}"
+    group: "{{ localhost_user }}"
+    mode: 0400
+  delegate_to: localhost
+
+- name: Delete Vault unseal key file from ansible executor
+  file:
+    path: /tmp/unseal-keys.json
+    state: absent
 
 - name: Get unseal key from output
   set_fact:
     root_token: "{{ vault_init_result.stdout | from_json | json_query('root_token') }}"
     unseal_key: "{{ vault_init_result.stdout | from_json | json_query('unseal_keys_b64') }}"
-
-- name: Debug vault init result
-  debug:
-    var: root_token
-
-- name: Debug vault init result
-  debug:
-    var: unseal_key
-
-- name: Define VAULT_TOKEN env variable
-  command: 'kubectl exec vault-0 -n vault -- /bin/sh -c "export VAULT_TOKEN={{ root_token }}"'
 
 - include_tasks: unseal_vault.yml
   loop: "{{ vault_pod_names }}"
@@ -92,4 +100,29 @@
 
 - name: Execute vault init script
   shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/vault_init.sh"
+  register: vault_init_script_result
      
+- name: Get Vault unseal key to ansible executor host
+  command: "kubectl cp vault/vault-0/tmp/{{ root_ca_cert_filename }}.json /tmp/{{ root_ca_cert_filename }}.json"
+  when: vault_init_script_result.stdout.find("Success! Data written to: pki/roles/example-dot-com") != -1
+
+- name: Fetch Vault unseal key file to ansible host
+  fetch:
+    src: /tmp/{{ root_ca_cert_filename }}.json
+    dest: /home/{{ localhost_user }}/
+    flat: yes
+
+- name: Set Vault unseal key file mode
+  file: 
+    path: /home/{{ localhost_user }}/{{ root_ca_cert_filename }}.json
+    owner: "{{ localhost_user }}"
+    group: "{{ localhost_user }}"
+    mode: 0400
+  delegate_to: localhost
+
+- name: Delete Vault unseal key file from ansible executor
+  file:
+    path: /tmp/{{ root_ca_cert_filename }}.json
+    state: absent
+    
+

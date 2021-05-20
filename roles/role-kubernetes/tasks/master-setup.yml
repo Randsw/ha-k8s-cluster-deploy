@@ -32,8 +32,8 @@
 
 - name: Get kubeadm file
   fetch:
-    dest: /etc/kubernetes/admin.conf
-    src: /home/{{ localhost_user }}/.kube/
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ localhost_user }}/.kube/
     flat: yes
 
 - name: Configure Flannel networking.
