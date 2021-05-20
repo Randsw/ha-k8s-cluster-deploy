@@ -1,0 +1,10 @@
+---
+k8s_sa_name: issuer
+k8s_namespace: namespace1
+issuer_name: echo.example.com-issuer
+pki_role: example-dot-com
+cert_name: echo.example.com-cert
+secret_name: echo-example-com-tls
+server_name: echo.example.com
+chart_name: echo-app
+k8s_kubeconfig: /home/rand/.kube/admin.conf

@@ -9,9 +9,6 @@ spec:
   type: {{ .Values.service_app1.type }}
   ports:
     - port: {{ .Values.service_app1.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
   selector:
     {{- include "echo-app.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: {{ .Values.app1_name}}

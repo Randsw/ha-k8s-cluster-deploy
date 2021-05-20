@@ -46,8 +46,9 @@ service_app2:
 
 ingress:
   enabled: true
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: echo.example.com
@@ -55,11 +56,11 @@ ingress:
         - path: /apple
           pathtype: Prefix
           servicename: apple
-          serviceport: 5687
+          serviceport: 5678
         - path: /banana
           pathtype: Prefix
           servicename: banana
-          serviceport: 5687
+          serviceport: 5678
 
   tls:
    - secretName: echo-example-com-tls
@@ -102,15 +103,4 @@ app2_fullnameOverride: ""
 app1_name: apple
 app2_name: banana
 
-#Cert-manager issuer
-certificate:
-  create: true
-  name: "echo-app-cert"
-
-issuer:
-  create: true
-  name: "echo-app-issuer"
-  vault_address: "http://vault.vault"
-  sa_token: dumb # Get after sa is created, need patch issuer after helm is installed
-  vault_pki_role: "example-dot-com"
 
