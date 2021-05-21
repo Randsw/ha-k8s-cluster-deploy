@@ -1,4 +1,4 @@
-- hosts: localhost
+- hosts: k8s_ha_cluster
   #become: yes
   gather_facts: yes
 
@@ -35,6 +35,7 @@
     # - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
     # - { role: role-helm, when: kubernetes_role == 'first-master'}
     # - { role: role-ingress, when: kubernetes_role == 'first-master'}
-     - { role: role-vault }
-     - { role: role-certmanager }
-     - { role: role-app-deploy}
+     - { role: role-vault, when: kubernetes_role == 'first-master' }
+     - { role: role-certmanager, when: kubernetes_role == 'first-master' }
+     - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
+    # - { role: create_app_ns_sa, when: kubernetes_role == 'first-master'}

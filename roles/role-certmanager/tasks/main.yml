@@ -17,33 +17,19 @@
       installCRDs: true
       replicaCount: 3
       tolerations:
-        - key: node-role.kubernetes.io/gw
+        - key: node-role.kubernetes.io/worker
           effect: NoSchedule
       webhook:
         replicaCount: 2
         tolerations:
-          - key: node-role.kubernetes.io/gw
+          - key: node-role.kubernetes.io/worker
             effect: NoSchedule
       cainjector:
         replicaCount: 2
         tolerations:
-          - key: node-role.kubernetes.io/gw
+          - key: node-role.kubernetes.io/worker
             effect: NoSchedule  
 
 - name: Wait for vault pods become ready
   shell: "kubectl wait --namespace=cert-manager --for=condition=Ready --all pods --timeout=60s"
   register: vault_ready
-
-# - name: Create issuer SA
-#   community.kubernetes.k8s:
-#     name: "{{ k8s_sa_name }}"
-#     api_version: v1
-#     kind: ServiceAccount
-#     namespace: "{{ k8s_namespace }}"
-#     state: present
-#     kubeconfig: "{{ k8s_kubeconfig }}"
-
-# - name: Pause for 1 minutes for cert-manager sign his certificate
-#   pause:
-#     minutes: "1"
-#     prompt: "Wait for Cert-manager become ready"

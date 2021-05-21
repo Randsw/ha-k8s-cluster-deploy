@@ -7,7 +7,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0555
-  delegate_to: localhost
 
 - name: Copy file to pod
   shell: kubectl cp /tmp/app-vault-init.sh vault-0:/tmp/app-vault-init.sh -n vault
@@ -37,15 +36,12 @@
 - name: Get Token of service account
   shell: 'kubectl get serviceaccount {{ k8s_sa_name }} -n {{ k8s_namespace }} -o json | jq -r ".secrets[].name"'
   register: issuer_sa_token
+  changed_when: false
 
 - name: Put sa token in variable
   set_fact:
     ISSUER_SECRET_REF: "{{ issuer_sa_token.stdout }}"
-
-- name: Debug token
-  debug:
-    var: ISSUER_SECRET_REF
-    
+ 
 - name: Deploy Issuer
   community.kubernetes.k8s:
     state: present
@@ -84,4 +80,4 @@
           name: "{{ issuer_name }}"
         commonName: "{{ server_name }}"
         dnsNames:
-        - "{{ server_name }}"    
+        - "{{ dns_server_name }}"    

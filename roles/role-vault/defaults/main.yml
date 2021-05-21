@@ -5,6 +5,7 @@ vault_pod_names:
 #  - vault-1
 #  - vault-2
 
+# KUBECONFIG
 k8s_kubeconfig: /home/cluster01/.kube/admin.conf
 
 #Root Certificate Authority name
@@ -12,7 +13,3 @@ root_ca_name: "Demo Root Certificate Authority"
 
 #Root Certificate Authority certificate filename
 root_ca_cert_filename: "demo-root-ca"
-
-localhost_user: cluster01
-
-

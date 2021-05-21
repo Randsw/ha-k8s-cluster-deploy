@@ -1,9 +1,23 @@
 ---
+#k8s cert-manager issuer CRD name 
 issuer_name: echo.example.com-issuer
+
+#k8s cert-manager certificate CRD name 
 cert_name: echo.example.com-cert
+
+#k8s secret name used by ingress
 secret_name: echo-example-com-tls
+
+#a common name to be used on the Certificate.
 server_name: echo.example.com
+
+#a list of DNS subjectAltNames to be set on the Certificate.
+dns_server_name: echo.example.com
+
+#name of helm release
 chart_name: echo-app
+
+#KUBECONFIG
 k8s_kubeconfig: /home/cluster01/.kube/admin.conf
 
 # Vault pki policy name.
@@ -14,7 +28,8 @@ k8s_auth_role_name: issuer
 
 #K8s ServiceAccount name used for access to vault
 k8s_sa_name: issuer
-#k8s ServiceAccount namespace
+
+#k8s app namespace
 k8s_namespace: namespace1
 
 #Vault pki role name. 
