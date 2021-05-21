@@ -1,5 +1,27 @@
 
 ---
+- name: Create vault init bash script
+  template:
+    dest: /tmp/app-vault-init.sh
+    src: app-vault-init.sh.j2
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0555
+  delegate_to: localhost
+
+- name: Copy file to pod
+  shell: kubectl cp /tmp/app-vault-init.sh vault-0:/tmp/app-vault-init.sh -n vault
+
+- name: Delete tmp file
+  file:
+    dest: /tmp/app-vault-init.sh
+    state: absent
+  delegate_to: localhost
+
+- name: Execute vault init script
+  shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/app-vault-init.sh"
+  register: vault_init_script_result
+
 - name: Deploy echo app chart inside namespace1 namespace
   community.kubernetes.helm:
     name: "{{ chart_name }}"
@@ -8,9 +30,9 @@
     create_namespace: yes
     force: yes
 
-#- name: Wait for vault pods become ready
-#  shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=60s"
-#  register: vault_ready
+- name: Wait for vault pods become ready
+  shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=60s"
+  register: vault_ready
 
 - name: Get Token of service account
   shell: 'kubectl get serviceaccount {{ k8s_sa_name }} -n {{ k8s_namespace }} -o json | jq -r ".secrets[].name"'

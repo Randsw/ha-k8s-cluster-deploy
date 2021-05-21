@@ -10,18 +10,6 @@ vault write auth/kubernetes/config \
     kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
     kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
-vault policy write pki - <<EOF
-path "pki*"                              { capabilities = ["read", "list"] }
-path "pki/roles/{{ pki_policy_name }}"   { capabilities = ["create", "update"] }
-path "pki/sign/{{ pki_policy_name }}"    { capabilities = ["create", "update"] }
-path "pki/issue/{{ pki_policy_name }}"   { capabilities = ["create"] }
-EOF
-
-vault write auth/kubernetes/role/{{ k8s_auth_role_name }} \
-    bound_service_account_names={{ k8s_sa_name }} \
-    bound_service_account_namespaces={{ k8s_namespace}} \
-    policies=pki
-
 vault secrets enable pki
 
 vault write -format=json pki/root/generate/internal \
@@ -31,7 +19,3 @@ vault write pki/config/urls \
     issuing_certificates="http://vault.vault:8200/v1/pki/ca" \
     crl_distribution_points="http://vault.vault:8200/v1/pki/crl"
 
-vault write pki/roles/{{ pki_role }} \
-    allowed_domains={{ domain_name }} \
-    allow_subdomains={{ allow_subdomains }} \
-    max_ttl={{ max_cert_ttl }}

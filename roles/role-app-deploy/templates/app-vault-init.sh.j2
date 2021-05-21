@@ -1,0 +1,21 @@
+#! /bin/sh
+set -e
+
+export VAULT_TOKEN={{ root_token }}
+
+vault policy write pki - <<EOF
+path "pki*"                              { capabilities = ["read", "list"] }
+path "pki/roles/{{ pki_policy_name }}"   { capabilities = ["create", "update"] }
+path "pki/sign/{{ pki_policy_name }}"    { capabilities = ["create", "update"] }
+path "pki/issue/{{ pki_policy_name }}"   { capabilities = ["create"] }
+EOF
+
+vault write auth/kubernetes/role/{{ k8s_auth_role_name }} \
+    bound_service_account_names={{ k8s_sa_name }} \
+    bound_service_account_namespaces={{ k8s_namespace}} \
+    policies=pki
+
+vault write pki/roles/{{ pki_role }} \
+    allowed_domains={{ domain_name }} \
+    allow_subdomains={{ allow_subdomains }} \
+    max_ttl={{ max_cert_ttl }}

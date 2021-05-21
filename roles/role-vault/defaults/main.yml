@@ -7,34 +7,11 @@ vault_pod_names:
 
 k8s_kubeconfig: /home/cluster01/.kube/admin.conf
 
-# Vault pki policy name.
-pki_policy_name: example-dot-com
-
-#K8s auth role name for vault access
-k8s_auth_role_name: issuer
-
-#K8s ServiceAccount name used for access to vault
-k8s_sa_name: issuer
-#k8s ServiceAccount namespace
-k8s_namespace: namespace1
-
 #Root Certificate Authority name
 root_ca_name: "Demo Root Certificate Authority"
 
 #Root Certificate Authority certificate filename
 root_ca_cert_filename: "demo-root-ca"
-
-#Vault pki role name. Must b
-pki_role: "{{ pki_policy_name }}"
-
-#Domain name used for certificate generation
-domain_name: "example.com"
-
-#Allowing subdomain in certificate
-allow_subdomains: "true"
-
-#Maximum certificate ttl
-max_cert_ttl: "15m"
 
 localhost_user: cluster01
 

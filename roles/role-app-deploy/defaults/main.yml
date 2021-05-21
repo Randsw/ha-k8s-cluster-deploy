@@ -1,10 +1,30 @@
 ---
-k8s_sa_name: issuer
-k8s_namespace: namespace1
 issuer_name: echo.example.com-issuer
-pki_role: example-dot-com
 cert_name: echo.example.com-cert
 secret_name: echo-example-com-tls
 server_name: echo.example.com
 chart_name: echo-app
-k8s_kubeconfig: /home/rand/.kube/admin.conf
+k8s_kubeconfig: /home/cluster01/.kube/admin.conf
+
+# Vault pki policy name.
+pki_policy_name: example-dot-com
+
+#K8s auth role name for vault access
+k8s_auth_role_name: issuer
+
+#K8s ServiceAccount name used for access to vault
+k8s_sa_name: issuer
+#k8s ServiceAccount namespace
+k8s_namespace: namespace1
+
+#Vault pki role name. 
+pki_role: "{{ pki_policy_name }}"
+
+#Domain name used for certificate generation
+domain_name: "example.com"
+
+#Allowing subdomain in certificate
+allow_subdomains: "true"
+
+#Maximum certificate ttl
+max_cert_ttl: "15m"
