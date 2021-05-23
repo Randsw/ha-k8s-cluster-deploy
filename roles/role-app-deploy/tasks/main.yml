@@ -15,16 +15,20 @@
   file:
     dest: /tmp/app-vault-init.sh
     state: absent
-  delegate_to: localhost
 
 - name: Execute vault init script
   shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/app-vault-init.sh"
   register: vault_init_script_result
 
+- name: Copy Helm chart to ansible executor
+  copy:
+    src: Helm/echo-app
+    dest: ~/{{ ansible_user }}
+
 - name: Deploy echo app chart inside namespace1 namespace
   community.kubernetes.helm:
     name: "{{ chart_name }}"
-    chart_ref: Helm/echo-app
+    chart_ref: ~/{{ ansible_user }}/echo-app
     release_namespace: "{{ k8s_namespace}}"
     create_namespace: yes
     force: yes
@@ -41,7 +45,7 @@
 - name: Put sa token in variable
   set_fact:
     ISSUER_SECRET_REF: "{{ issuer_sa_token.stdout }}"
- 
+
 - name: Deploy Issuer
   community.kubernetes.k8s:
     state: present

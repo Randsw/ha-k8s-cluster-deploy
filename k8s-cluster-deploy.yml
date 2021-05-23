@@ -74,10 +74,15 @@
       block:
         - name: Install pip
           apt:
-            name: python-pip
+            name: python3-pip
             state: present
             update_cache: yes
-        
+
+        - name: Install jq
+          apt:
+            name: jq
+            state: present
+           
         - name: Install openshift
           pip:
             name: openshift
@@ -89,9 +94,15 @@
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
     - { role: role-kube-vip }
-    - { role: role-helm, when: kubernetes_role == 'first-master'}
+    - { role: role-helm, when: kubernetes_role == 'first_master' }
+
+- hosts: k8s_ha_cluster
+  become: no
+  gather_facts: no
+  
+  roles:
     - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
-    - { role: role-ingress, when: kubernetes_role == 'first-master'}
-    - { role: role-vault, when: kubernetes_role == 'first-master' }
-    - { role: role-certmanager, when: kubernetes_role == 'first-master' }
-    - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
+#    - { role: role-ingress, when: kubernetes_role == 'first-master'}
+#    - { role: role-vault, when: kubernetes_role == 'first-master' }
+#    - { role: role-certmanager, when: kubernetes_role == 'first-master' }
+#    - { role: role-app-deploy, when: kubernetes_role == 'first-master'}

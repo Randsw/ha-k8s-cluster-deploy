@@ -1,4 +1,16 @@
 ---
+- name: Get playbook executor username
+  become: false
+  local_action: command whoami
+  register: playbook_executor_username
+  changed_when: false
+
+- name: Get ansible host executer username
+  become: false
+  command: whoami
+  register: ansible_host_username
+  changed_when: false
+
 - name: Initialize Kubernetes master with kubeadm init.
   command: >
     kubeadm init
@@ -14,29 +26,47 @@
 - name: Print the init output to screen.
   debug:
     var: kubeadmin_init.stdout_lines
-    #verbosity: 2
   when: not kubernetes_init_stat.stat.exists
 
 - name: Ensure .kube directory exists.
+  become: no
   file:
-    path: ~/.kube
+    path: "/home/{{ ansible_user }}/.kube"
     state: directory
     mode: 0755
 
-- name: Symlink the kubectl admin.conf to ~/.kube/conf.
+- name: Symlink the kubectl admin.conf to /home/{{ ansible_user }}/.kube/config
   file:
     src: /etc/kubernetes/admin.conf
-    dest: ~/.kube/config
+    dest: "/home/{{ ansible_host_username.stdout }}/.kube/config"
     state: link
     mode: 0644
 
+- name: Change k8s api port to k8s VIP port
+  lineinfile:
+    path: /etc/kubernetes/admin.conf
+    regexp: '^(\s*){{ item.search }}$'
+    line:  '\1{{ item.replace }}'
+    backrefs: yes
+  loop:
+    - { search: 'https://k8s-cp:6443', replace: 'https://k8s-cp:{{ k8s_cp_port }}' }
+
 - name: Get kubeadm file
   fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: /home/{{ localhost_user }}/.kube/
+    src: "/etc/kubernetes/admin.conf"
+    dest: "/home/{{ playbook_executor_username.stdout }}/.kube/"
     flat: yes
 
+#- name: Set mode to kubeconfig
+#  file:
+#    path: "/home/{{ playbook_executor_username.stdout }}/.kube/admin.conf"
+#    owner: "{{ playbook_executor_username.stdout }}"
+#    group: "{{ playbook_executor_username.stdout }}"
+#    mode: 0644
+#  delegate_to: localhost
+
 - name: Configure Flannel networking.
+  become: false
   command: "{{ item }}"
   with_items:
     - kubectl apply -f {{ kubernetes_flannel_manifest_file_rbac }}
@@ -46,26 +76,30 @@
   when: kubernetes_pod_network.cni == 'flannel'
 
 - name: Copy config file for Callico networking
+  become: false
   copy:
     src: calico.yaml
-    dest: ~/calico.yml
+    dest: /home/{{ ansible_host_username.stdout  }}/calico.yml
     mode: 0644
 
 - name: Configure Calico networking.
+  become: false
   command: "{{ item }}"
-  with_items:
-    - kubectl apply -f ~/calico.yml
+  loop:
+    - "kubectl apply -f /home/{{ ansible_host_username.stdout }}/calico.yml"
   register: calico_result
   changed_when: "'created' in calico_result.stdout"
   when: kubernetes_pod_network.cni == 'calico'
 
 - name: Get Kubernetes version for Weave installation.
+  become: false
   shell: kubectl version | base64 | tr -d '\n'
   changed_when: false
   register: kubectl_version
   when: kubernetes_pod_network.cni == 'weave'
 
 - name: Configure Weave networking.
+  become: false
   command: "{{ item }}"
   with_items:
     - "kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version.stdout_lines[0] }}"
@@ -74,6 +108,7 @@
   when: kubernetes_pod_network.cni == 'weave'
 
 - name: Configure Cillium networking
+  become: false
   command: "{{ item }}"
   loop:
     - "kubectl apply -f {{ cillium_manifest_file }}"
@@ -84,12 +119,14 @@
 # TODO: Check if taint exists with something like `kubectl describe nodes`
 # instead of using kubernetes_init_stat.stat.exists check.
 - name: Allow pods on master node (if configured).
+  become: false
   command: "kubectl taint nodes --all node-role.kubernetes.io/master-"
   when:
     - kubernetes_allow_pods_on_master | bool
     - not kubernetes_init_stat.stat.exists
 
 - name: Check if Kubernetes Dashboard UI service already exists.
+  become: false
   shell: kubectl get services --namespace kube-system | grep -q kubernetes-dashboard
   changed_when: false
   failed_when: false
@@ -97,13 +134,9 @@
   when: kubernetes_enable_web_ui | bool
 
 - name: Enable the Kubernetes Web Dashboard UI (if configured).
+  become: false
   command: "kubectl create -f {{ kubernetes_web_ui_manifest_file }}"
   when:
     - kubernetes_enable_web_ui | bool
     - kubernetes_dashboard_service is failed
 
-- name: Fetch kubeconfig from remote server
-  fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: /home/rand/.kube/
-    flat: yes

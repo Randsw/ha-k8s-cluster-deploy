@@ -35,9 +35,9 @@
         #   raft:
         #     enabled: true
 
-- name: Pause for 1 minutes for vault images downloaded and started
+- name: Pause for 15 seconds for vault images downloaded and started
   pause:
-    minutes: "1"
+    seconds: "15"
     prompt: "Wait for Helm release is initialized"
 
 - name: Wait for vault pods become ready
@@ -50,13 +50,13 @@
   when: vault_ready.stdout.find("condition met") != -1
 
 - name: Get Vault unseal key to ansible executor host
-  command: "kubectl cp vault/vault-0/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"
+  command: "kubectl cp vault/vault-0:/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"
   when: vault_init_result.stdout.find("unseal_keys_b64") != -1
 
 - name: Fetch Vault unseal key file to ansible host
   fetch:
     src: /tmp/vault-unseal-keys.json
-    dest: /home/{{ localhost_user.stdout }}/
+    dest: /home/{{ username_on_the_host.stdout }}/
     flat: yes
 
 - name: Set Vault unseal key file mode
@@ -71,6 +71,10 @@
   file:
     path: /tmp/unseal-keys.json
     state: absent
+
+#- name: Debug unseal
+#  debug:
+#    var: vault_init_result
 
 - name: Get unseal key from output
   set_fact:
@@ -89,8 +93,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0555
-  delegate_to: localhost
-
+ 
 - name: Copy file to pod
   shell: kubectl cp /tmp/vault_init.sh vault-0:/tmp/vault_init.sh -n vault
 
@@ -98,31 +101,29 @@
   file:
     dest: /tmp/vault_init.sh
     state: absent
-  delegate_to: localhost
-
+ 
 - name: Execute vault init script
   shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/vault_init.sh"
   register: vault_init_script_result
 
-- name: Get Vault unseal key to ansible executor host
-  command: "kubectl cp vault/vault-0/tmp/{{ root_ca_cert_filename }}.json /tmp/{{ root_ca_cert_filename }}.json"
+- name: Get Vault root CA cert to ansible executor host
+  command: "kubectl cp vault/vault-0:/tmp/{{ root_ca_cert_filename }}.json /tmp/{{ root_ca_cert_filename }}.json"
   when: vault_init_script_result.stdout.find("Success!") != -1
 
-- name: Fetch Vault unseal key file to ansible host
+- name: Fetch Vault root CA cert to ansible host
   fetch:
     src: /tmp/{{ root_ca_cert_filename }}.json
-    dest: /home/{{ localhost_user }}/
+    dest: /home/{{ username_on_the_host.stdout }}/
     flat: yes
 
-- name: Set Vault unseal key file mode
+- name: Set Vault root CA cert mode
   file: 
     path: /home/{{ username_on_the_host.stdout }}/{{ root_ca_cert_filename }}.json
     owner: "{{ username_on_the_host.stdout }}"
     group: "{{ username_on_the_host.stdout }}"
     mode: 0400
   delegate_to: localhost
-
-- name: Delete Vault unseal key file from ansible executor
+- name: Delete Vault root CA cert from ansible executor
   file:
     path: /tmp/{{ root_ca_cert_filename }}.json
     state: absent

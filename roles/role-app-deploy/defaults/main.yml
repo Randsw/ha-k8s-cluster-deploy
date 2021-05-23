@@ -18,7 +18,7 @@ dns_server_name: echo.example.com
 chart_name: echo-app
 
 #KUBECONFIG
-k8s_kubeconfig: /home/cluster01/.kube/admin.conf
+k8s_kubeconfig: /home/{{ ansible_user }}/.kube/config
 
 # Vault pki policy name.
 pki_policy_name: example-dot-com

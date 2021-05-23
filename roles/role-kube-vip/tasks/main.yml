@@ -10,3 +10,9 @@
     path: /etc/hosts
     regexp: 'k8s-cp$'
     line: "{{ kube_vip_address }}  k8s-cp"
+
+- name: Add VIP entry in /etc/hosts on ansible executor host
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ kube_vip_address }}  k8s-cp"
+  delegate_to: localhost

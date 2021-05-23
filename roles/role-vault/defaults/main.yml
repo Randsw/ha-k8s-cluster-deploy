@@ -6,7 +6,7 @@ vault_pod_names:
 #  - vault-2
 
 # KUBECONFIG
-k8s_kubeconfig: /home/cluster01/.kube/admin.conf
+k8s_kubeconfig: /home/{{ ansible_user }}/.kube/admin.conf
 
 #Root Certificate Authority name
 root_ca_name: "Demo Root Certificate Authority"
