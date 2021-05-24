@@ -87,7 +87,7 @@ Create role from values
 Create cluster role from values
 */}}
 {{- define "k8s_user.clusterRoles" -}}
-{{- range  .Values.ns_admin_cluster_role.rules }}
+{{- range  .rules }}
 {{- range $key, $value := . }}
 {{- if eq $key "apiGroups" }}
 - {{ $key }}:
@@ -104,3 +104,4 @@ Create cluster role from values
 {{- end }} 
 {{- end }}  
 {{- end }}
+

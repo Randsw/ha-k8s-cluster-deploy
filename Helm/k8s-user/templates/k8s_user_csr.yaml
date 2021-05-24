@@ -1,14 +1,33 @@
-{{- range .Values.ns_users }}
+{{- range .Values.role_binding }}
 ---
+{{- if eq .enabled true }}
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
-  name: {{ .name }}-csr
+  name: {{ .username }}-csr
 spec:
   groups:
     - system:authenticated
-  request: {{ $.Files.Get (printf "csr/%s.csr" .name) | b64enc | trim }}
+  request: {{ $.Files.Get (printf "csr/%s.csr" .username) | b64enc | trim }}
   signerName: kubernetes.io/kube-apiserver-client
   usages:
     - client auth
-{{- end}}
+{{- end }}
+{{- end }}
+
+{{- range .Values.cluster_role_binding }}
+---
+{{- if and (eq .enabled true) (eq .sameAsRole false) }}
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: {{ .username }}-csr
+spec:
+  groups:
+    - system:authenticated
+  request: {{ $.Files.Get (printf "csr/%s.csr" .username) | b64enc | trim }}
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+    - client auth
+{{- end }}
+{{- end }}

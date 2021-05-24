@@ -1,0 +1,10 @@
+---
+k8s_namespace: namespace1
+chart_name: echo-app-users
+users:
+  - username: echo-app-admin
+    default_role: admin
+  - username: echo-app-dev
+    default_role: edit
+    
+ 

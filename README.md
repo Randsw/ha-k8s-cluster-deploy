@@ -20,8 +20,7 @@ Deploy Ingress-nginx-controller as daemon set on gw1 and gw2. Deploy Metalllb. C
 * Create test web application deployment with storage usage
 
 TODO:
- 1. edit port in kubeconfig file 6443->8443 in ansible
- 2. Create sa namespace admin ansible role
- 3. Test all staff
- 4. Write config file for kubeadm
+ 1. Create sa namespace admin ansible role
+ 2. Test all staff
+ 3. Write config file for kubeadm
  

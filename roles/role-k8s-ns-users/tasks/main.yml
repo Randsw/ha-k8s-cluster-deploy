@@ -1,0 +1,158 @@
+---
+# - name: Get ansible host username
+#   become: no
+#   local_action: command whoami
+#   register: username_on_the_host
+#   changed_when: false
+
+- name: Get ansible host username
+  become: no
+  command: whoami
+  register: ansible_host_username
+  changed_when: false
+
+# - name: Generate an OpenSSL private key with a different size (2048 bits)
+#   community.crypto.openssl_privatekey:
+#     path: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem"
+#     size: 2048
+#     force: yes
+#     owner: "{{ ansible_host_username.stdout }}"
+#     group: "{{ ansible_host_username.stdout }}"
+#     mode: 0400
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Generate an OpenSSL Certificate Signing Request
+#   community.crypto.openssl_csr:
+#     path: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}.csr"
+#     privatekey_path: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem"
+#     common_name: "{{ user.username }}"
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Copy Helm chart to ansible executor
+#   copy:
+#     src: Helm/k8s-user
+#     dest: "/home/{{ ansible_user }}"
+
+# - name: Copy CSR files to helm folder to render
+#   copy:
+#     src: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}.csr"
+#     dest: "/home/{{ ansible_user }}/k8s-user/csr/"
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Deploy echo app chart inside namespace1 namespace
+#   community.kubernetes.helm:
+#     name: "{{ chart_name }}"
+#     chart_ref: "/home/{{ ansible_user }}/k8s-user"
+#     release_namespace: "{{ k8s_namespace}}"
+#     force: yes
+#     values:
+#       role_binging:
+#         - default_role: "{{ users.0.default_role }}"
+#           username: "{{ users.0.username }}"
+#         - default_role: "{{ users.1.default_role }}"
+#           username: "{{ users.1.username }}"
+
+# - name: Approve CSR
+#   command: "kubectl certificate approve {{ user.username }}-csr"
+#   loop: "{{ users }}"
+#   loop_control: 
+#     loop_var: user
+
+# - name: Get signed certificate from k8s api
+#   shell: kubectl get csr {{ user.username }}-csr -o jsonpath='{.status.certificate}' \
+#          | base64 -d > /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
+#   loop: "{{ users }}"
+#   loop_control: 
+#     loop_var: user
+
+# # - name: Fetch certificate to ansible executor
+# #   fetch:
+# #     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
+# #     dest: /home/{{ username_on_the_host.stdout }}/.kube/
+# #     flat: yes
+# #   loop: "{{ users }}"
+# #   loop_control:
+# #     loop_var: user
+
+# # - name: Fetch private key to ansible executor
+# #   fetch:
+# #     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
+# #     dest: /home/{{ username_on_the_host.stdout }}/.kube/
+# #     flat: yes
+# #   loop: "{{ users }}"
+# #   loop_control:
+# #     loop_var: user
+
+- name: Get server information
+  command: kubectl config view --flatten --minify -o "jsonpath={.clusters[0]}"
+  register: cluster_info
+
+- name: set variable
+  set_fact:
+    k8s_cluser_info: "{{ cluster_info.stdout | to_nice_yaml(width=5337) }}"
+    server: "{{ cluster_info.stdout | to_json | from_json | community.general.json_query('cluster.server') }}"
+    cluster_name: "{{ cluster_info.stdout | from_json | community.general.json_query('name') }}"
+    #certificate_authority: "{{ cluster_info.stdout | to_json | from_json | json_query('cluster.certificate-authority-data') }}"
+
+# - name: Copy to file
+#   copy:
+#     content: "{{ k8s_cluser_info }}"
+#     dest: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}-config"
+#   loop: "{{ users }}"  
+#   loop_control:
+#     loop_var: user
+
+# - name: Set cluster
+#   command: "kubectl config set-cluster NAME --server=server\ 
+#            --certificate-authority=path/to/certficate/authority \
+#            --insecure-skip-tls-verify=true"
+
+
+# - name: Set context
+#   command: "kubectl config set-context {{ user.username }} --user={{ user.username }} \
+#             --namespace={{ k8s_namespace }} \
+#             --kubeconfig=/home/{{ ansible_host_username.stdout }}/{{ user.username }}-config \
+#             --cluster=minikube"
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Set user
+#   command: "kubectl config set-credentials {{ user.username }} \
+#     --client-certificate=/home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt \
+#     --client-key=/home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem
+#     --kubeconfig=/home/{{ ansible_host_username.stdout }}/{{ user.username }}-config 
+#     --cluster=minikube --embed-certs=true"
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Delete private key from ansible host
+#   file:
+#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
+#     state: absent
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Delete certificate from ansible host
+#   file:
+#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem
+#     state: absent
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user
+
+# - name: Delete CSR from ansible host
+#   file:
+#     path: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.csr
+#     state: absent
+#   loop: "{{ users }}"
+#   loop_control:
+#     loop_var: user

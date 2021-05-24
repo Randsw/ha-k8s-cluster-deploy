@@ -23,12 +23,12 @@
 - name: Copy Helm chart to ansible executor
   copy:
     src: Helm/echo-app
-    dest: ~/{{ ansible_user }}
+    dest: /home/{{ ansible_user }}
 
 - name: Deploy echo app chart inside namespace1 namespace
   community.kubernetes.helm:
     name: "{{ chart_name }}"
-    chart_ref: ~/{{ ansible_user }}/echo-app
+    chart_ref: /home/{{ ansible_user }}/echo-app
     release_namespace: "{{ k8s_namespace}}"
     create_namespace: yes
     force: yes
