@@ -32,8 +32,14 @@
   become: yes
   gather_facts: yes
 
-  pre_tasks:
+  vars_files:
+    - ansible_vault_enc.yml 
 
+  vars:
+    become_pass: '{{ ansible_executor_become_pass }}'
+
+  pre_tasks:
+     
     - name: Disable cloud-init
       lineinfile:
         path: /etc/cloud/cloud-init.disabled
@@ -94,7 +100,7 @@
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
     - { role: role-kube-vip }
-    - { role: role-helm, when: kubernetes_role == 'first_master' }
+    - { role: role-helm, when: kubernetes_role == 'first-master' }
 
 - hosts: k8s_ha_cluster
   become: no

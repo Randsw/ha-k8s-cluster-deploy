@@ -63,7 +63,7 @@
 # Very bad part. can be changed in kubeadm future version
 - name: Save join_master_certificate_key
   set_fact:
-    master_certificate_key: "{{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][44] | trim }}"
+    master_certificate_key: "{{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][43] | trim }}"
   when: kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"
   delegate_facts: true
@@ -108,6 +108,7 @@
   when: kubernetes_role == 'node'
 
 - name: Add taints to gw nodes
+  become: false
   command: kubectl taint nodes {{ node }} {{ kubernetes_gw_taints }}
   loop: "{{ groups['k8s_ha_gateway'] }}"
   loop_control:
@@ -115,6 +116,7 @@
   when: kubernetes_role == 'first-master'
 
 - name: Add taints to worker nodes
+  become: false
   command: kubectl taint nodes {{ node }} {{ kubernetes_worker_taints }}
   loop: "{{ groups['k8s_ha_workers'] }}"
   loop_control:

@@ -1,4 +1,14 @@
 ---
+- name: Get ansible host username
+  become: false
+  command: whoami
+  register: ansible_host_username
+  changed_when: false
+
+- name: Set kubeconfig variable
+  set_fact:
+    k8s_kubeconfig: "/home/{{ ansible_host_username.stdout }}/.kube/config"
+
 - name: Ensure at least one manifest is in the list.
   fail:
     msg: "Please supply one or more k8s_manifests to apply."
