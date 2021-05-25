@@ -1,6 +1,6 @@
 
 ---
-- name: Create vault init bash script
+- name: Create echo-app vault init bash script
   template:
     dest: /tmp/app-vault-init.sh
     src: app-vault-init.sh.j2
@@ -16,7 +16,7 @@
     dest: /tmp/app-vault-init.sh
     state: absent
 
-- name: Execute vault init script
+- name: Execute echo-app vault init script
   shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/app-vault-init.sh"
   register: vault_init_script_result
 
@@ -33,7 +33,7 @@
     create_namespace: yes
     force: yes
 
-- name: Wait for vault pods become ready
+- name: Wait for echo-app pods become ready
   shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=60s"
   register: vault_ready
 

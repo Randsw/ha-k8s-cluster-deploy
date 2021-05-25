@@ -2,8 +2,8 @@
 #Vault pod names for unseal
 vault_pod_names:
   - vault-0
-#  - vault-1
-#  - vault-2
+  - vault-1
+  - vault-2
 
 # KUBECONFIG
 k8s_kubeconfig: /home/{{ ansible_user }}/.kube/admin.conf

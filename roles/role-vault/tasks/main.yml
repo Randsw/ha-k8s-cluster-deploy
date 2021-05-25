@@ -5,6 +5,11 @@
   register: username_on_the_host
   changed_when: false
 
+- name: Set local path provisioner as default storage class
+  shell: > 
+    kubectl patch storageclass local-path
+    -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
 - name: Add Vault chart repo
   community.kubernetes.helm_repository:
     name: hashicorp
@@ -29,25 +34,31 @@
         tolerations: |
           - key: node-role.kubernetes.io/worker
             effect: NoSchedule
-        # ha:
-        #   enabled: true
-        #   replicas: 3
-        #   raft:
-        #     enabled: true
+         ha:
+           enabled: true
+           replicas: 3
+           raft:
+             enabled: true
 
-- name: Pause for 15 seconds for vault images downloaded and started
+- name: Pause for 60 seconds for vault images downloaded and started
   pause:
-    seconds: "15"
+    seconds: "60"
     prompt: "Wait for Helm release is initialized"
 
 - name: Wait for vault pods become ready
-  shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=60s"
+  shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=600s"
   register: vault_ready
 
 - name: Init vault operator
   shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/vault-unseal-keys.json"
   register: vault_init_result
   when: vault_ready.stdout.find("condition met") != -1
+
+- name: Pause for 60 seconds for pv bound
+  pause:
+    seconds: "60"
+    prompt: "Wait for vault pv become bound"
+
 
 - name: Get Vault unseal key to ansible executor host
   command: "kubectl cp vault/vault-0:/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"
