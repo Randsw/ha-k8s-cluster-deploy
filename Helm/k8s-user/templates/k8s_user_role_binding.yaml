@@ -12,11 +12,12 @@ metadata:
   namespace: {{ .namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
 {{- if .default_role }}
   name: {{ .default_role }}
+  kind: ClusterRole
 {{- else }}
   name: {{ .rolename }}
+  kind: Role
 {{- end }}
 subjects:
 - kind: {{ .kind }}
