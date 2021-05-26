@@ -1,0 +1,10 @@
+---
+- name: Unseal first vault pod
+  command: "kubectl exec vault-0 -n vault -- vault operator unseal {{ item }}"
+  loop: "{{ unseal_key }}"
+  #no_log: true
+
+- include_tasks: unseal_other_pods.yml
+  loop: "{{ vault_pod_names }}"
+  loop_control:
+    loop_var: pod_name 

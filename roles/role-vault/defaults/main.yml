@@ -1,7 +1,6 @@
 ---
 #Vault pod names for unseal
 vault_pod_names:
-  - vault-0
   - vault-1
   - vault-2
 

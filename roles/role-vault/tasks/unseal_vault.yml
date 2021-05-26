@@ -1,5 +1,0 @@
----
-- name: Unseal vault
-  command: "kubectl exec vault-0 -n vault -- vault operator unseal {{ item }}"
-  loop: "{{ unseal_key }}"
-  no_log: true

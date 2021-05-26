@@ -34,11 +34,11 @@
         tolerations: |
           - key: node-role.kubernetes.io/worker
             effect: NoSchedule
-         ha:
-           enabled: true
-           replicas: 3
-           raft:
-             enabled: true
+        ha:
+          enabled: true
+          replicas: 3
+          raft:
+            enabled: true
 
 - name: Pause for 60 seconds for vault images downloaded and started
   pause:
@@ -51,9 +51,6 @@
 
 - include_tasks: prepare.yml
 
-- include_tasks: unseal_vault.yml
-  loop: "{{ vault_pod_names }}"
-  loop_control:
-    loop_var: pod_name
+- include_tasks: unseal_main_pod.yml
 
 - include_tasks: init.yml

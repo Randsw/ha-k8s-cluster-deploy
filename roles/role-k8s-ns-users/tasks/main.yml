@@ -41,6 +41,7 @@
   copy:
     src: "/home/{{ ansible_host_username.stdout }}/{{ user.username }}.csr"
     dest: "/home/{{ ansible_user }}/k8s-user/csr/"
+    remote_src: yes
   loop: "{{ users }}"
   loop_control:
     loop_var: user
@@ -77,8 +78,8 @@
 
 - name: set variable
   set_fact:
-    server: "{{ cluster_info.stdout | from_json | community.general.json_query('cluster.server') }}"
-    cluster_name: "{{ cluster_info.stdout | from_json | community.general.json_query('name') }}"
+    server: "{{ cluster_info.stdout | from_json | json_query('cluster.server') }}"
+    cluster_name: "{{ cluster_info.stdout | from_json | json_query('name') }}"
     certificate_authority: "{{ cluster_info.stdout | from_json | json_query('cluster.\"certificate-authority-data\"') }}"
 
 - name: Prepare kubeconfig file

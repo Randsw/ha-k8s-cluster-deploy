@@ -1,0 +1,12 @@
+---
+- name: Pause for 15 seconds for raft cluster prepare for work
+  pause:
+    seconds: "15"
+    prompt: "Wait for raft cluster is ready"
+
+- name: Join pods to raft cluster
+  command: "kubectl exec {{ pod_name }} -n vault -- vault operator raft join http://vault-0.vault-internal:8200"
+
+- name: Unseal vault pods
+  command: "kubectl exec {{ pod_name }} -n vault -- vault operator unseal {{ item }}"
+  loop: "{{ unseal_key }}"

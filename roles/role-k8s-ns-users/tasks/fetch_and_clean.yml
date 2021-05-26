@@ -3,7 +3,7 @@
   fetch:
     src: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca
     dest: /home/{{ username_on_the_host.stdout }}/.kube/
-     flat: yes
+    flat: yes
 
 - name: Fetch kubeconfig, private key an certs from ansible host
   fetch:
