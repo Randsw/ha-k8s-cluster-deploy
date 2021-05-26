@@ -1,9 +1,9 @@
 ---
-# - name: Get ansible host username
-#   become: no
-#   local_action: command whoami
-#   register: username_on_the_host
-#   changed_when: false
+- name: Get ansible host username
+  become: no
+  local_action: command whoami
+  register: username_on_the_host
+  changed_when: false
 
 - name: Get ansible host username
   become: no
@@ -128,72 +128,6 @@
   loop_control:
     loop_var: user
 
-# - name: Fetch certificate to ansible executor
-#   fetch:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
-#     dest: /home/{{ username_on_the_host.stdout }}/.kube/
-#     flat: yes
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Fetch private key to ansible executor
-#   fetch:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem
-#     dest: /home/{{ username_on_the_host.stdout }}/.kube/
-#     flat: yes
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Fetch ca file from ansible host
-#   fetch:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca
-#     dest: /home/{{ username_on_the_host.stdout }}/.kube/
-#      flat: yes
-
-# - name: Fetch kubeconfig file
-#   fetch:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}-config
-#     dest: /home/{{ username_on_the_host.stdout }}/.kube/
-#     flat: yes
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Delete private key from ansible host
-#   file:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
-#     state: absent
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Delete certificate from ansible host
-#   file:
-#     src: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.pem
-#     state: absent
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Delete CSR from ansible host
-#   file:
-#     path: /home/{{ ansible_host_username.stdout }}/{{ user.username }}.csr
-#     state: absent
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
-
-# - name: Delete CA file from ansible host
-#   file:
-#     path: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca
-#     state: absent
-
-# - name: Delete kubeconfig from ansible host
-#   file:
-#     path: /home/{{ ansible_host_username.stdout }}/{{ user.username }}-config
-#     state: absent
-#   loop: "{{ users }}"
-#   loop_control:
-#     loop_var: user
+# Get kubeconfig, private key and signed certificate from ansible host to ansible executor
+# and delete that files + .csr files on ansible host
+- include_tasks: fetch_and_clean.yml

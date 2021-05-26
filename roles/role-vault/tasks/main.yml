@@ -49,94 +49,11 @@
   shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=600s"
   register: vault_ready
 
-- name: Init vault operator
-  shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/vault-unseal-keys.json"
-  register: vault_init_result
-  when: vault_ready.stdout.find("condition met") != -1
-
-- name: Pause for 60 seconds for pv bound
-  pause:
-    seconds: "60"
-    prompt: "Wait for vault pv become bound"
-
-
-- name: Get Vault unseal key to ansible executor host
-  command: "kubectl cp vault/vault-0:/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"
-  when: vault_init_result.stdout.find("unseal_keys_b64") != -1
-
-- name: Fetch Vault unseal key file to ansible host
-  fetch:
-    src: /tmp/vault-unseal-keys.json
-    dest: /home/{{ username_on_the_host.stdout }}/
-    flat: yes
-
-- name: Set Vault unseal key file mode
-  file: 
-    path: /home/{{ username_on_the_host.stdout }}/vault-unseal-keys.json
-    owner: "{{ username_on_the_host.stdout }}"
-    group: "{{ username_on_the_host.stdout }}"
-    mode: 0400
-  delegate_to: localhost
-
-- name: Delete Vault unseal key file from ansible executor
-  file:
-    path: /tmp/unseal-keys.json
-    state: absent
-
-#- name: Debug unseal
-#  debug:
-#    var: vault_init_result
-
-- name: Get unseal key from output
-  set_fact:
-    root_token: "{{ vault_init_result.stdout | from_json | json_query('root_token') }}"
-    unseal_key: "{{ vault_init_result.stdout | from_json | json_query('unseal_keys_b64') }}"
+- include_tasks: prepare.yml
 
 - include_tasks: unseal_vault.yml
   loop: "{{ vault_pod_names }}"
   loop_control:
     loop_var: pod_name
 
-- name: Create vault init bash script
-  template:
-    dest: /tmp/vault_init.sh
-    src: vault_init.sh.j2
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0555
- 
-- name: Copy file to pod
-  shell: kubectl cp /tmp/vault_init.sh vault-0:/tmp/vault_init.sh -n vault
-
-- name: Delete tmp file
-  file:
-    dest: /tmp/vault_init.sh
-    state: absent
- 
-- name: Execute vault init script
-  shell: kubectl exec vault-0 -n vault -- /bin/sh -c "/tmp/vault_init.sh"
-  register: vault_init_script_result
-
-- name: Get Vault root CA cert to ansible executor host
-  command: "kubectl cp vault/vault-0:/tmp/{{ root_ca_cert_filename }}.json /tmp/{{ root_ca_cert_filename }}.json"
-  when: vault_init_script_result.stdout.find("Success!") != -1
-
-- name: Fetch Vault root CA cert to ansible host
-  fetch:
-    src: /tmp/{{ root_ca_cert_filename }}.json
-    dest: /home/{{ username_on_the_host.stdout }}/
-    flat: yes
-
-- name: Set Vault root CA cert mode
-  file: 
-    path: /home/{{ username_on_the_host.stdout }}/{{ root_ca_cert_filename }}.json
-    owner: "{{ username_on_the_host.stdout }}"
-    group: "{{ username_on_the_host.stdout }}"
-    mode: 0400
-  delegate_to: localhost
-- name: Delete Vault root CA cert from ansible executor
-  file:
-    path: /tmp/{{ root_ca_cert_filename }}.json
-    state: absent
-    
-
+- include_tasks: init.yml

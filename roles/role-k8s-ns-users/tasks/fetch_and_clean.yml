@@ -1,0 +1,24 @@
+---
+- name: Fetch ca file from ansible host
+  fetch:
+    src: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca
+    dest: /home/{{ username_on_the_host.stdout }}/.kube/
+     flat: yes
+
+- name: Fetch kubeconfig, private key an certs from ansible host
+  fetch:
+    src: /home/{{ ansible_host_username.stdout }}/{{ item.0.username }}{{ item.1 }}
+    dest: /home/{{ username_on_the_host.stdout }}/.kube/
+    flat: yes
+  loop: "{{ users | product (['-config', '.pem', '.crt']) | list }}"
+
+- name: Delete CA file from ansible host
+  file:
+    path: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca
+    state: absent
+
+- name: Delete secret data
+  file:
+    path: /home/{{ ansible_host_username.stdout }}/{{ item.0.username }}{{ item.1 }}
+    state: absent
+  loop: "{{ users | product (['-config', '.csr', '.pem', '.crt']) | list }}"
