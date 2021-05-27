@@ -11,17 +11,31 @@
   register: ansible_host_username
   changed_when: false
 
-- name: Initialize Kubernetes master with kubeadm init.
-  command: >
-    kubeadm init
-    --pod-network-cidr={{ kubernetes_pod_network.cidr }}
-    --apiserver-advertise-address={{ kubernetes_apiserver_advertise_address | default(ansible_default_ipv4.address, true) }}
-    --kubernetes-version {{ kubernetes_version_kubeadm }}
-    --ignore-preflight-errors={{ kubernetes_ignore_preflight_errors }}
-    --control-plane-endpoint=k8s-cp:{{k8s_cp_port}}
-    {{ kubernetes_kubeadm_init_extra_opts }}
+
+# Use kubeadm config file to cluster setup
+- name: Copy kubeadm config file to ansible host
+  src: cluster-config.yml.j2
+  dest: /home/{{ ansible_host_username.stdout }}/cluster-config.yml
+  owner: "{{ ansible_user }}"
+  group: "{{ ansible_user }}"
+  mode: 0555
+
+- name: Initialize Kubernetes master with kubeadm init using config file
+  command: "kubeadm init --config /home/{{ ansible_host_username.stdout }}/cluster-config.yml"
   register: kubeadmin_init
   when: not kubernetes_init_stat.stat.exists
+
+# - name: Initialize Kubernetes master with kubeadm init.
+#   command: >
+#     kubeadm init
+#     --pod-network-cidr={{ kubernetes_pod_network.cidr }}
+#     --apiserver-advertise-address={{ kubernetes_apiserver_advertise_address | default(ansible_default_ipv4.address, true) }}
+#     --kubernetes-version {{ kubernetes_version_kubeadm }}
+#     --ignore-preflight-errors={{ kubernetes_ignore_preflight_errors }}
+#     --control-plane-endpoint=k8s-cp:{{k8s_cp_port}}
+#     {{ kubernetes_kubeadm_init_extra_opts }}
+#   register: kubeadmin_init
+#   when: not kubernetes_init_stat.stat.exists
 
 - name: Print the init output to screen.
   debug:

@@ -1,6 +1,5 @@
 haproxy_server: true
 kubernetes_role: master
-localhost_user: rand
 kubernetes_master_join_command_extra_opts: "--cri-socket  /run/containerd/containerd.sock --control-plane --certificate-key " 
 
 # Frontend settings.

@@ -23,5 +23,3 @@ Deploy Ingress-nginx-controller as daemon set on gw1 and gw2. Deploy Metalllb. C
 
 * Create test web application deployment
 
-TODO:
- 1. Write config file for kubeadm
