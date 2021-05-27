@@ -52,9 +52,9 @@
         var:  hostvars[item]['ansible_eth1']['ipv4']['address']
       loop: "{{ groups['all'] }}"
   
-     - name: Run the equivalent of "apt-get update" as a separate step
-       apt:
-         update_cache: yes
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
 
     - name: Find timezone
       command: timedatectl 
@@ -100,7 +100,7 @@
     - { role: geerlingguy.containerd }
     - { role: role-kubernetes }
     - { role: role-kube-vip }
-    - { role: role-helm, when: kubernetes_role == 'first-master' }
+    #- { role: role-helm, when: kubernetes_role == 'first-master' }
 
 - hosts: k8s_ha_cluster
   become: no
@@ -108,8 +108,8 @@
   
   roles:
     - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
-    - { role: role-ingress, when: kubernetes_role == 'first-master'}
-    - { role: role-vault, when: kubernetes_role == 'first-master' }
-    - { role: role-certmanager, when: kubernetes_role == 'first-master' }
-    - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
-    - { role: role-k8s-ns-users, when: kubernetes_role == 'first-master'}
+    #- { role: role-ingress, when: kubernetes_role == 'first-master'}
+    #- { role: role-vault, when: kubernetes_role == 'first-master' }
+    #- { role: role-certmanager, when: kubernetes_role == 'first-master' }
+    #- { role: role-app-deploy, when: kubernetes_role == 'first-master'}
+    #- { role: role-k8s-ns-users, when: kubernetes_role == 'first-master'}

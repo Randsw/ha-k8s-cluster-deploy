@@ -49,8 +49,17 @@
   command: kubeadm reset --force
   when: kubernetes_init_stat.stat.exists
 
+- name: Create master join certificate key
+  command: kubeadm certs certificate-key
+  when: kubernetes_role == 'first-master'
+  register: join_cert_key
+
 # Set up firstmaster.
 - include_tasks: master-setup.yml
+  when: kubernetes_role == 'first-master'
+
+- name: Wait for service pods become ready
+  command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
   when: kubernetes_role == 'first-master'
 
 # Set up nodes.
@@ -60,10 +69,10 @@
   when: kubernetes_role == 'first-master'
   register: kubernetes_join_command_result
 
-# Very bad part. can be changed in kubeadm future version
 - name: Save join_master_certificate_key
   set_fact:
-    master_certificate_key: "{{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][43] | trim }}"
+    #master_certificate_key: "{{ hostvars[groups['k8s_ha_masters'][0]]['kubeadmin_init']['stdout_lines'][43] | trim }}"
+    master_join_cert_key: "{{ hostvars[group['k8s_ha_masters'][0]]['join_cert_key']['stdout'] }}"
   when: kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"
   delegate_facts: true
@@ -75,7 +84,7 @@
       {{ kubernetes_join_command_result.stdout }}
       --apiserver-advertise-address {{ hostvars[item]['kubernetes_apiserver_advertise_address'] }}
       {{ kubernetes_master_join_command_extra_opts }}
-      {{ master_certificate_key }}
+      {{ master_join_cert_key }}
   when: kubernetes_join_command_result.stdout is defined and kubernetes_role == 'first-master'
   delegate_to: "{{ item }}"
   delegate_facts: true

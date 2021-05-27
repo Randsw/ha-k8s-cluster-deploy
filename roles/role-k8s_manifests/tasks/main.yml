@@ -50,3 +50,7 @@
   shell: >
     kubectl patch storageclass local-path 
     -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+- name: Wait for service pods become ready
+  command: "kubectl wait --namespace={{ item }} --for=condition=Ready --all pods --timeout=600s"
+  loop: "{{ k8s_manifests_namespaces }}"

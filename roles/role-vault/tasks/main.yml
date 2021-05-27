@@ -5,11 +5,6 @@
   register: username_on_the_host
   changed_when: false
 
-- name: Set local path provisioner as default storage class
-  shell: > 
-    kubectl patch storageclass local-path
-    -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
 - name: Add Vault chart repo
   community.kubernetes.helm_repository:
     name: hashicorp

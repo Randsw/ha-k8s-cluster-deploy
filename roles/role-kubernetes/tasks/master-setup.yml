@@ -11,17 +11,17 @@
   register: ansible_host_username
   changed_when: false
 
-
 # Use kubeadm config file to cluster setup
 - name: Copy kubeadm config file to ansible host
-  src: cluster-config.yml.j2
-  dest: /home/{{ ansible_host_username.stdout }}/cluster-config.yml
-  owner: "{{ ansible_user }}"
-  group: "{{ ansible_user }}"
-  mode: 0555
+  template:
+    src: "cluster-config.yml.j2"
+    dest: "/home/{{ ansible_host_username.stdout }}/cluster-config.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0555
 
 - name: Initialize Kubernetes master with kubeadm init using config file
-  command: "kubeadm init --config /home/{{ ansible_host_username.stdout }}/cluster-config.yml"
+  command: "kubeadm init --config /home/{{ ansible_host_username.stdout }}/cluster-config.yml --upload-certs"
   register: kubeadmin_init
   when: not kubernetes_init_stat.stat.exists
 
@@ -70,14 +70,6 @@
     src: "/etc/kubernetes/admin.conf"
     dest: "/home/{{ playbook_executor_username.stdout }}/.kube/"
     flat: yes
-
-#- name: Set mode to kubeconfig
-#  file:
-#    path: "/home/{{ playbook_executor_username.stdout }}/.kube/admin.conf"
-#    owner: "{{ playbook_executor_username.stdout }}"
-#    group: "{{ playbook_executor_username.stdout }}"
-#    mode: 0644
-#  delegate_to: localhost
 
 - name: Configure Flannel networking.
   become: false

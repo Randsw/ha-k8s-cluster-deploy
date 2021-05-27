@@ -12,3 +12,7 @@ k8s_force: false
 k8s_resource_namespace: ''
 k8s_manage_namespace: false
 k8s_no_log: false
+k8s_manifests_namespaces:
+  - local-path-storage
+  - kube-system
+  - metallb-system 
