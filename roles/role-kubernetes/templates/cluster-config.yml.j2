@@ -3,11 +3,10 @@ kind: ClusterConfiguration
 kubernetesVersion: v1.20.0
 apiServer:
   certSANs:
-  {% for adr in kubernetes_apiserver_certSANs %}
+{% for adr in kubernetes_apiserver_certSANs %}
   - {{ adr }}
-  {% endfor %}}
+{% endfor %}
   extraArgs:
-    advertise-address: {{ kubernetes_apiserver_advertise_address | default(ansible_default_ipv4.address, true) }}
     enable-admission-plugins: NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota
     authorization-mode: Node,RBAC
 dns:
@@ -28,8 +27,10 @@ nodeRegistration:
   criSocket: "{{ kubernetes_cri_socket }}"
   kubeletExtraArgs:
     cgroup-driver: "{{ kubernetes_cgroupDriver }}"
-certificateKey: {{ join_cert_key.stdout }}
-
+localAPIEndpoint:
+  advertiseAddress: {{ kubernetes_apiserver_advertise_address | default(ansible_default_ipv4.address, true) }}
+  bindPort: 6443
+---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: {{ kubernetes_cgroupDriver }}

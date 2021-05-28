@@ -37,9 +37,6 @@ server_name: echo.example.com
 #a list of DNS subjectAltNames to be set on the Certificate.
 dns_server_name: echo.example.com
 
-#name of helm release
-chart_name: echo-app
-
 # Vault pki policy name.
 pki_policy_name: example-dot-com
 

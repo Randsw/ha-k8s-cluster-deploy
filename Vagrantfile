@@ -3,8 +3,8 @@
 $k8s_master_num = 3
 $k8s_worker_num = 3
 $k8s_gw_num = 2
-$bridge = "enp0s20u4" #"wlxbcf685653648" #name of network interface with internet connection 
-$vm_cidr = "192.168.246" # virtual machines CIDR
+$bridge = "wlxbcf685653648" #name of network interface with internet connection 
+$vm_cidr = "192.168.1" # virtual machines CIDR
 $vm_ip_addr_start = 130
 Vagrant.configure("2") do |config|
     config.vm.box = "generic/ubuntu1804"
