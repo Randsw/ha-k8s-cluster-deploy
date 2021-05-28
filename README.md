@@ -23,3 +23,6 @@ Deploy Ingress-nginx-controller as daemon set on gw1 and gw2. Deploy Metalllb. C
 
 * Create test web application deployment
 
+Known issue:
+1. Problem with kubeconfig after first master init. kubectl wait failed. Reason unknown
+2. Other master init problem. ectd check failure due timeout. Reason unknow. Try to solve problem using kubectl wait

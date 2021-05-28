@@ -148,5 +148,3 @@
 
 - name: Wait for service pods become ready
   command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
-  when: kubernetes_role == 'first-master'
-
