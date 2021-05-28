@@ -34,6 +34,18 @@ To install it use: `ansible-galaxy collection install community.crypto`
 
 ## System Overview
 
+This cluster used only for education purpose. 
+:warning: DO NOT USE IN PRODUCTION
+
+Cluster consist of 8 Virtual Machines
+* 3 Control Plane nodes
+* 3 Worker nodes
+* 2 Gateway nodes
+
+![Cluster](images/k8s-ha-cluster-main.jpg)
+
+
+
 
 
 
