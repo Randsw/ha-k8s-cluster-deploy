@@ -3,18 +3,16 @@ kind: ClusterConfiguration
 kubernetesVersion: v1.20.0
 apiServer:
   certSANs:
-  - 127.0.0.1
-  - cluster-api.example.com
-  - 192.168.1.131
-  - 192.168.1.132
-  - 192.168.1.133 
+  {% for adr in kubernetes_apiserver_certSANs %}
+  - {{ adr }}
+  {% endfor %}}
   extraArgs:
     advertise-address: {{ kubernetes_apiserver_advertise_address | default(ansible_default_ipv4.address, true) }}
     enable-admission-plugins: NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota
     authorization-mode: Node,RBAC
 dns:
   type: CoreDNS
-clusterName: kubernetes
+clusterName: {{ kubernetes_cluster_name }}
 controlPlaneEndpoint: k8s-cp:{{k8s_cp_port}}
 networking:
   podSubnet: {{ kubernetes_pod_network.cidr }}

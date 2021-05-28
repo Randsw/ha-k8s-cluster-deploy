@@ -146,3 +146,7 @@
     - kubernetes_enable_web_ui | bool
     - kubernetes_dashboard_service is failed
 
+- name: Wait for service pods become ready
+  command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
+  when: kubernetes_role == 'first-master'
+

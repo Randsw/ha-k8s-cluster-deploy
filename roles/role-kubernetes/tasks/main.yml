@@ -58,10 +58,6 @@
 - include_tasks: master-setup.yml
   when: kubernetes_role == 'first-master'
 
-- name: Wait for service pods become ready
-  command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
-  when: kubernetes_role == 'first-master'
-
 # Set up nodes.
 - name: Get the kubeadm join command from the Kubernetes master.
   command: kubeadm token create --print-join-command

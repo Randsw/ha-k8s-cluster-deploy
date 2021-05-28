@@ -1,12 +1,71 @@
 ansible_host: 192.168.1.131
 ansible_user: vagrant
 ansible_ssh_private_key_file: "./.vagrant/machines/{{ inventory_hostname }}/virtualbox/private_key"
-kubernetes_kubeadm_init_extra_opts: "--upload-certs"
+#kubernetes_kubeadm_init_extra_opts: "--upload-certs"
 
+
+
+
+###################### Kubernetes variable ############################################
+kubernetes_role: "first-master"
+kubernetes_kubeproxy_mode: "ipvs"
 kubernetes_apiserver_advertise_address: "{{ ansible_host }}"
 kubernetes_cluster_domain_name: "cluster.local"
 kubernetes_cgroupDriver: "systemd"
 kubernetes_cri_socket: "/run/containerd/containerd.sock"
+kubernetes_cluster_name: kubernetes
+kubernetes_apiserver_certSANs:
+  - 127.0.0.1
+  - cluster-api.example.com
+  - 192.168.1.131
+  - 192.168.1.132
+  - 192.168.1.133 
+  
+###################### Echo app variables #############################################
+#k8s cert-manager issuer CRD name 
+issuer_name: echo.example.com-issuer
 
-kubernetes_role: "first-master"
-kubernetes_kubeproxy_mode: "ipvs"
+#k8s cert-manager certificate CRD name 
+cert_name: echo.example.com-cert
+
+#k8s secret name used by ingress
+secret_name: echo-example-com-tls
+
+#a common name to be used on the Certificate.
+server_name: echo.example.com
+
+#a list of DNS subjectAltNames to be set on the Certificate.
+dns_server_name: echo.example.com
+
+#name of helm release
+chart_name: echo-app
+
+# Vault pki policy name.
+pki_policy_name: example-dot-com
+
+#k8s app namespace
+k8s_namespace: namespace1
+
+#Domain name used for certificate generation
+domain_name: "example.com"
+
+#Allowing subdomain in certificate
+allow_subdomains: "true"
+
+#Maximum certificate ttl
+max_cert_ttl: "15m"
+
+# Echo-app namespace users
+chart_name: echo-app-users
+users:
+  - username: echo-app-admin
+    default_role: admin
+  - username: echo-app-dev
+    default_role: edit
+
+########################### Hashicorp Vault variables #####################################
+#Root Certificate Authority name
+root_ca_name: "Demo Root Certificate Authority"
+
+#Root Certificate Authority certificate filename
+root_ca_cert_filename: "demo-root-ca"

@@ -23,3 +23,7 @@ haproxy_backend_servers:
     address: "{{ hostvars[groups['k8s_ha_masters'][1]]['ansible_host'] }}:6443"
   - name: k8s-master3
     address: "{{ hostvars[groups['k8s_ha_masters'][2]]['ansible_host'] }}:6443"   
+
+######################### kube vip variables ################################
+vip_eth_interface: eth1
+kube_vip_-address: 192.168.1.150
