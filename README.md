@@ -1,5 +1,43 @@
 # Deploy HA k8s cluster with kubeadmin using ansible and vagrant
 
+## Introduction
+
+Deploy HA kubernetes cluster with 3 contol-plane nodes, 3 worker nodes and 2 GW nodes for external access to cluster using Vagrant
+
+:warning: **This version work only with Ubuntu Server/Dekstop**
+
+## Contents
+
+1. [Requirements](#requirements)
+   * [Host](#host)
+   * [Ansible](#ansible)
+   * [Docker](#docker)
+3. [General principles](#general-principles)
+   * [Configure](#configure)
+   * [Deploy](#deploy)
+
+## Requirements
+
+### Host
+
+* 4 Processor core
+* 16 GB of RAM
+
+### Ansible
+
+* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) verison **2.9** or newer
+* [Ansible Collection Community.Kubernetes](https://docs.ansible.com/ansible/latest/collections/community/kubernetes/)
+To install it use: `ansible-galaxy collection install community.kubernetes`
+* [Ansible Collection Community.Crypto](https://docs.ansible.com/ansible/latest/collections/community/crypto/)
+To install it use: `ansible-galaxy collection install community.crypto`
+
+
+## System Overview
+
+
+
+
+
 * Deploy 8 virtual machines with ubuntu 18.04 using vagrant
 
 * Install k8s on VM - 3 node as master, 3 as worker using ansible roles, 2 as ingress node
