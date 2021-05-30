@@ -22,6 +22,9 @@ kubernetes_apiserver_certSANs:
   - 192.168.1.133 
   
 ###################### Echo app variables #############################################
+#Echo app chart name
+chart_name_app: echo-app
+
 #k8s cert-manager issuer CRD name 
 issuer_name: echo.example.com-issuer
 
@@ -53,12 +56,14 @@ allow_subdomains: "true"
 max_cert_ttl: "15m"
 
 # Echo-app namespace users
-chart_name: echo-app-users
+chart_name_users: echo-app-users
+k8s_users_namespace: "{{ k8s_namespace }}"
 users:
   - username: echo-app-admin
     default_role: admin
   - username: echo-app-dev
     default_role: edit
+    
 
 ########################### Hashicorp Vault variables #####################################
 #Root Certificate Authority name

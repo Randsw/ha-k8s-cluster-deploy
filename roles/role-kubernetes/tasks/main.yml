@@ -49,11 +49,6 @@
   command: kubeadm reset --force
   when: kubernetes_init_stat.stat.exists
 
-#- name: Create master join certificate key
-#  command: kubeadm certs certificate-key
-#  when: kubernetes_role == 'first-master'
-#  register: join_cert_key
-
 # Set up firstmaster.
 - include_tasks: master-setup.yml
   when: kubernetes_role == 'first-master'
@@ -64,11 +59,6 @@
   changed_when: false
   when: kubernetes_role == 'first-master'
   register: kubernetes_join_command_result
-
-- name: debug
-  debug:
-    var: "{{ join_cert_key.stdout_lines.2 }}"
-  when: kubernetes_role =='first-master'
 
 - name: Save join_master_certificate_key
   set_fact:

@@ -1,6 +1,6 @@
 ---
-k8s_namespace: namespace1
-chart_name: echo-app-users
+k8s_users_namespace: namespace1
+chart_name_users: echo-app-users
 users:
   - username: echo-app-admin
     default_role: admin

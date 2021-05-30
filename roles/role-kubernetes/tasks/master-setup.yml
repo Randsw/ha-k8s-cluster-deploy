@@ -146,20 +146,39 @@
     - kubernetes_enable_web_ui | bool
     - kubernetes_dashboard_service is failed
 
-- name: Pause for 60 seconds for kube-system namespace created
-  pause:
-    seconds: "60"
-    prompt: "Wait for kube-system namespace created"
+- name: Wait for kube-system namespaces created
+  become: false
+  command: "kubectl get ns"
+  register: kube_system_ns
+  until: kube_system_ns.stdout.find("kube-system") != -1
+  retries: 10
+  delay: 10
+
+- name: Wait for pods created
+  become: false
+  command: kubectl get po -A
+  register: kube_system_po
+  until: kube_system_po.stdout.find("kube-system") != -1
+  retries: 10
+  delay: 10
+
+# - name: Pause for 30 seconds for pods in kube-system namespace created
+#   pause:
+#     seconds: "30"
+#     prompt: "Wait for  pods in kube-system namespace created"
 
 - name: Wait for service pods become ready
   become: false
   command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
 
-- name: Initialize Kubernetes master with kubeadm init using config file
+- name: Generate kubernetes core certificates
   command: "kubeadm init phase upload-certs --upload-certs " 
   register: join_cert_key
 
-- name: Pause for 10 seconds for certificate generation
-  pause:
-    seconds: "10"
-    prompt: "Wait for certificate generation"
+- name: Wait for secret with certificates created
+  become: false
+  command: "kubectl get secret -n kube-system"
+  register: kubeadm_secret
+  until: kubeadm_secret.stdout.find("kubeadm-certs") != -1
+  retries: 10
+  delay: 10

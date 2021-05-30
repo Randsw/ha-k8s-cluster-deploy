@@ -48,9 +48,9 @@
 
 - name: Deploy echo app chart inside namespace1 namespace
   community.kubernetes.helm:
-    name: "{{ chart_name }}"
+    name: "{{ chart_name_users }}"
     chart_ref: "/home/{{ ansible_user }}/k8s-user"
-    release_namespace: "{{ k8s_namespace}}"
+    release_namespace: "{{ k8s_users_namespace}}"
     force: yes
     values:
       role_binging:
@@ -66,8 +66,8 @@
     loop_var: user
 
 - name: Get signed certificate from k8s api
-  shell: kubectl get csr {{ user.username }}-csr -o jsonpath='{.status.certificate}' \
-         | base64 -d > /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt
+  shell: "kubectl get csr {{ user.username }}-csr -o jsonpath='{.status.certificate}' \
+         | base64 -d > /home/{{ ansible_host_username.stdout }}/{{ user.username }}.crt"
   loop: "{{ users }}"
   loop_control: 
     loop_var: user
@@ -105,7 +105,7 @@
 
 - name: Set k8s context
   command: "kubectl config set-context {{ user.username }} --user={{ user.username }} \
-            --namespace={{ k8s_namespace }} \
+            --namespace={{ k8s_users_namespace }} \
             --kubeconfig=/home/{{ ansible_host_username.stdout }}/{{ user.username }}-config \
             --cluster={{ cluster_name }}"
   loop: "{{ users }}"

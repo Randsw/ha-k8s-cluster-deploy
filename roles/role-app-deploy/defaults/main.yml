@@ -15,7 +15,7 @@ server_name: echo.example.com
 dns_server_name: echo.example.com
 
 #name of helm release
-chart_name: echo-app
+chart_name_app: echo-app
 
 #KUBECONFIG
 k8s_kubeconfig: /home/{{ ansible_user }}/.kube/config

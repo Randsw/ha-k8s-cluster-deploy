@@ -1,5 +1,4 @@
 ---
-
 - include_tasks: configure_vault.yml
 
 - name: Copy Helm chart to ansible executor
@@ -9,7 +8,7 @@
 
 - name: Deploy echo app chart inside namespace1 namespace
   community.kubernetes.helm:
-    name: "{{ chart_name }}"
+    name: "{{ chart_name_app }}"
     chart_ref: /home/{{ ansible_user }}/echo-app
     release_namespace: "{{ k8s_namespace}}"
     create_namespace: yes
