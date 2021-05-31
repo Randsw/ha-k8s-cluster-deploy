@@ -40,9 +40,24 @@
     seconds: "60"
     prompt: "Wait for Helm release is initialized"
 
+# - name: Wait for vault0 pods become ready
+#   shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=600s"
+#   register: vault_ready
+
+# - name: Wait for vault1 pods become ready
+#   shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-1 --timeout=600s"
+#   register: vault_ready
+
+# - name: Wait for vault2 pods become ready
+#   shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-1 --timeout=600s"
+#   register: vault_ready
+
 - name: Wait for vault pods become ready
-  shell: "kubectl wait --namespace=vault --for=condition=Initialized pod/vault-0 --timeout=600s"
-  register: vault_ready
+  command: "kubectl wait --namespace=vault --for=condition=Initialized pod/{{ item }} --timeout=600s"
+  loop: 
+    - vault-0
+    - vault-1
+    - vault-2
 
 - include_tasks: prepare.yml
 

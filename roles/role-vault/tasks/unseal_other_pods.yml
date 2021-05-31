@@ -1,7 +1,7 @@
 ---
-- name: Pause for 15 seconds for raft cluster prepare for work
+- name: Pause for 20 seconds for raft cluster prepare for work
   pause:
-    seconds: "15"
+    seconds: "20"
     prompt: "Wait for raft cluster is ready"
 
 - name: Join pods to raft cluster

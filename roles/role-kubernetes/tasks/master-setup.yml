@@ -162,11 +162,6 @@
   retries: 10
   delay: 10
 
-# - name: Pause for 30 seconds for pods in kube-system namespace created
-#   pause:
-#     seconds: "30"
-#     prompt: "Wait for  pods in kube-system namespace created"
-
 - name: Wait for service pods become ready
   become: false
   command: "kubectl wait --namespace=kube-system --for=condition=Ready --all pods --timeout=600s"
