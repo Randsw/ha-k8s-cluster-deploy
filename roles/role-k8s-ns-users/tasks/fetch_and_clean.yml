@@ -12,6 +12,16 @@
     flat: yes
   loop: "{{ users | product (['-config', '.pem', '.crt']) | list }}"
 
+- name: Change k8s VIP port to k8s apiserver standart port. Access from ansible executor throuht gateway1 on port 6443
+  become: no
+  lineinfile:
+    path: "/home/{{ username_on_the_host.stdout }}/.kube/{{ item.username }}-config"
+    regexp: '(^\s*server:\s*)https://k8s-cp:8443$'
+    line:  '\1https://k8s-cp:6443'
+    backrefs: yes
+  loop: "{{ users }}"
+  delegate_to: localhost
+
 - name: Delete CA file from ansible host
   file:
     path: /home/{{ ansible_host_username.stdout }}/{{ cluster_name }}-ca

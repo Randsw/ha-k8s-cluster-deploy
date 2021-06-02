@@ -29,7 +29,16 @@
     #       pip:
     #         name: openshift
     #   when: kubernetes_role == 'first-master'
-
+  tasks:
+    - name: Change k8s api port to k8s VIP port
+      lineinfile:
+        path: ~/.kube/admin.conf
+        regexp: '(^\s*server:\s*){{ item.search }}$'
+        line:  '\1{{ item.replace }}'
+        backrefs: yes
+      loop:
+      - { search: 'https://k8s-cp:8443', replace: 'https://k8s-cp:6443' }
+    
 
   roles:
     # - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
@@ -38,4 +47,4 @@
     # - { role: role-vault, when: kubernetes_role == 'first-master' }
     # - { role: role-certmanager, when: kubernetes_role == 'first-master' }
     # - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
-     - { role: role-k8s-ns-users} #, when: kubernetes_role == 'first-master'}
+    # - { role: role-k8s-ns-users} #, when: kubernetes_role == 'first-master'}
