@@ -36,6 +36,7 @@
     group: "{{ username_on_the_host.stdout }}"
     mode: 0400
   delegate_to: localhost
+
 - name: Delete Vault root CA cert from ansible executor
   file:
     path: /tmp/{{ root_ca_cert_filename }}.json

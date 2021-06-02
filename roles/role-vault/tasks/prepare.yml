@@ -7,11 +7,7 @@
 - name: Init vault operator
   shell: "kubectl exec vault-0 -n vault -- vault operator init -format=json | tee /tmp/vault-unseal-keys.json"
   register: vault_init_result
-
-- name: Debug
-  debug:
-    var: vault_init_result
-    verbosity: 2
+  no_log: true
 
 - name: Get Vault unseal key to ansible executor host
   command: "kubectl cp vault/vault-0:/tmp/vault-unseal-keys.json /tmp/vault-unseal-keys.json"

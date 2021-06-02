@@ -37,7 +37,6 @@ Install: `ansible-galaxy collection install community.crypto`
 
 ## System Overview
 
-
 ### Virtual Machines
 
 This cluster used only for education purpose.
@@ -73,11 +72,51 @@ From kubernets documentation:
 
 ![HA control-plane](images/ha-master-gce.png)
 
-For load balancing workers access to control-plane we using **Kube-VIP**. The leader within the cluster will assume the **VIP** and will have it bound to the selected interface that is declared within the configuration. When the leader changes it will evacuate the **VIP** first or in failure scenarios the **VIP** will be directly assumed by the next elected leader.
+For load balancing workers access to control-plane we using **Kube-VIP**. The leader within the cluster will assume the **VIP** and will have it bound to the selected interface that is declared within the configuration. When the leader changes it will evacuate the **VIP** first or in failure scenarios the **VIP** will be directly assumed by the next elected leader. **Kube-VIP** deployed by static pods
 This configuration provide failure toleration but not load balancing. For load balancing we deploy HAProxy server on all control-plane
 nodes. HaProxy listen 0.0.0.0:8443 on contol-plane nodes and proxy request to kubernetes apiserver using round-robin algoritm.
 
 ![HA control-plane](images/k8s-ha-cluster-extended.png)
+
+### LoadBalancer Service
+
+Kubernetes does not offer an implementation of network load-balancers (Services of type LoadBalancer) for bare metal clusters. The implementations of Network LB that Kubernetes does ship with are all glue code that calls out to various IaaS platforms (GCP, AWS, Azure…). If you’re not running on a supported IaaS platform (GCP, AWS, Azure…), LoadBalancers will remain in the “pending” state indefinitely when created.
+
+Bare metal cluster operators are left with two lesser tools to bring user traffic into their clusters, “NodePort” and “externalIPs” services. Both of these options have significant downsides for production use, which makes bare metal clusters second class citizens in the Kubernetes ecosystem.
+
+MetalLB aims to redress this imbalance by offering a Network LB implementation that integrates with standard network equipment, so that external services on bare metal clusters also “just work” as much as possible.
+
+In this realisation Metallb work in Layer2 mode.
+
+[MetalLB is a load-balancer implementation for bare metal Kubernetes clusters](https://metallb.universe.tf/)
+
+### Storage class
+
+**Local Path Provisioner** provides a way for the Kubernetes users to utilize the local storage in each node. Based on the user configuration, the Local Path Provisioner will create hostPath based persistent volume on the node automatically. It utilizes the features introduced by **Kubernetes Local Persistent Volume** feature, but make it a simpler solution than the built-in local volume feature in Kubernetes. Currently the **Kubernetes Local Volume provisioner** cannot do dynamic provisioning for the local volumes.
+
+With **Local Path Provisioner** we can create dynamic provisioning the volume using hostPath. We  dont have to create static persistent volume. **Local Path Provisioner** do all provisioning work for us.
+
+[Local Path Provisioner](https://github.com/rancher/local-path-provisioner)
+
+### Example application
+
+Example application is just two servers that return word *apple* and *banana* on GET request. In Kubernetes term application consist of 2 deployments(one for *apple* and one for *banana*), 1 replica per deployment. External access to application provided by NGINX ingress controller and ingress.
+
+Access to *apple* app - `https://echo.example.com/apple`
+Access to *banana* app - `https://echo.example.com/banana`
+(A record in `/etc/hosts` file which matches IP address of LoadBalance service, provided by **Metallb** and hostname `echo.example.com`)
+
+Certificate for encrypted HTTPS connection provided by Cert-manager, which use Hashicorp Vault as root Certificate Authority(CA). Certificate for ingress issued for 15 min(can be changed by `max_cert_ttl` variable) and automatically renewed by Vault. Cert-manager store certificate in kuberntes secret.
+
+For application administration we create two users:
+
+* `echo-app-admin` - bind to kubernetes `admin` role in application namespace scope
+* `echo-app-dev` - bind to kubernetes `edit` role in application namespace scope
+
+Access method to kubernetes apiserver is key/certificate.
+All Private key, certificate for that users and kubectl config file stored in `~/.kube` folder on ansible executor host.
+
+![echo-application](images/k8s-ha-cluster-app.png)
 
 ## Cluster installation
 
@@ -92,38 +131,53 @@ Configure `Vagrantfile` with your variable
 |`vm_cidr`         | 192.168.1     | First 3 octets of nodes ip address                          |
 |`vm_ip_addr_start`| 130           | Nodes start ip address last octet. Increase incremently     |
 
-
 Create and start VM
 `vagrant up`
 
 Provision VM with ansible
 `ansible-playbook -i inventories/k8s-ha-cluster/hosts.yml --ask-become-pass k8s-cluster-deploy.yml`
 
-## Configuration
+## Cluster Configuration
 
+### Kubernetes
 
+| Name                                   | Default Value | Description                                                 |
+|----------------------------------------|---------------|-------------------------------------------------------------|
+|`kubernetes_kubeproxy_mode`             | ipvs          | Which proxy mode to use: 'iptables' or 'ipvs'               |
+|`kubernetes_apiserver_advertise_address`| -             | The IP address the API Server will advertise it's listening on. If not set the default network interface will be used.
+|`kubernetes_cluster_domain_name`        |cluster.local  | Cluster domain name
+|`kubernetes_cgroupDriver`               |systemd        | cgroup driver : 'systemd' or 'cgroup'
+|`kubernetes_cri_socket`                 |/run/containerd/containerd.sock| CRI socket. In this realistion only container.d
+|`kubernetes_cluster_name`               |kubernetes     | Cluster name
 
+### Hashicorp Vault
 
-* Deploy 8 virtual machines with ubuntu 18.04 using vagrant
+| Name                                   | Default Value | Description                                                 |
+|----------------------------------------|---------------|-------------------------------------------------------------|
+|`root_ca_name`                          | "Demo Root Certificate Authority"| Name of CA
+|`root_ca_cert_filename`                 | demo-root-ca  | CA parameters filename
 
-* Install k8s on VM - 3 node as master, 3 as worker using ansible roles, 2 as ingress node
+### Example Application
 
-* Use HAproxy to load balance k8s api-server
+| Name                                   | Default Value               | Description                                         |
+|----------------------------------------|-----------------------------|-----------------------------------------------------|
+|`chart_name_app`                        |echo-app                     | Helm release name for echo-app                      |
+|`issuer_name`                           |echo.example.com-issuer      | Kubernetes cert-manager issuer CRD name             |
+|`cert_name`                             |echo.example.com-cert        | Kubernetes cert-manager certificate CRD name        |
+|`secret_name`                           |echo-example-com-tls         | Kubernetes secret name used by ingress              |
+|`server_name`                           |echo.example.com             | A common name to be used in TLS Certificate         |
+|`dns_server_name`                       |echo.example.com             | A list of DNS subjectAltNames to be set in the TLS Certificate|
+|`pki_policy_name`                       |example-dot-com              | Vault pki policy name                               |
+|`k8s_namespace`                         |namespace1                   | Application kubernetes namespace name               |
+|`domain_name`                           |example.com                  | Domain name used for certificate generation         |
+|`allow_subdomains`                      |true                         | Allow certificate generation for subdomains         |
+|`max_cert_ttl`                          |15m                          | Maximum certificate ttl                             |
+|`chart_name_users`                      |echo-app-users               | Helm release name for echo-app-users chart          |
+|`k8s_users_namespace`                   |same as `k8s_namespace`      | Namespace for user access. Must be same as `k8s_namespace`|
+|`users`                                 |- username: echo-app-admin default_role: admin<br />- username: echo-app-dev default_role: edit                                                   | List of users. If bind to kubernetes default role set up `default role` field. If bind to custom role - provide `rolename` field instead|
 
-* Use kube-vip to create HA VIP for master node
+TODO:
 
-* Use RBAC to restrict access to cluster
-
-* Use 2 GW node to access k8s test application outside of cluster with Ingress
-
-* Deploy Rancher Local Path Provisioner.
-
-* Deploy Hashicorp Vault
-
-* Deploy cert-manager
-
-* Enable TLS connection with Ingress. Generate CA based on Vault and use cert-manager to renew certificate
-
-* Create test web application deployment
-
-Known issue:
+1. Set up monitioring usin kube-prometheus-stack
+2. Set up logging using banzai-cloud EFK stack
+3. Set up monitoring/loggint using Prometheus/Loki/Grafana stack

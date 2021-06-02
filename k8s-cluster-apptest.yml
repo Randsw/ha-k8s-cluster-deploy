@@ -3,14 +3,10 @@
 
   tasks:
   
-  - name: Read content of CA file
-    debug:
-      msg: "{{ lookup('file', '/home/{{ ansible_user }}/demo-root-ca.json') | from_json | json_query('data.certificate') }}"
-  
-  - name: Set fact root ca certificate
+  - name: Get root ca certificate
     set_fact:
-      ca_root_cert: "{{ lookup('file', '/home/{{ ansible_user }}/demo-root-ca.json') | from_json | json_query('data.certificate') }}"
- 
+      ca_root_cert: "{{ lookup('file', '/home/{{ ansible_user }}/demo-root-ca.json') | 
+                        from_json | json_query('data.certificate') }}"
 
   - name: Save root CA certfifcate to file
     copy:
@@ -20,7 +16,7 @@
       group: "{{ ansible_user }}"
       mode: '0400' 
 
-# Uri module doesnt allow provide ca certificate file. Community version allow select ca_path, so just waiting...
+# Uri module doesn`t allow provide ca certificate file. Community version allow select ca_path, so just waiting...
       
 #  - name: Test application apple
 #    ansible.builtin.uri:
@@ -39,3 +35,9 @@
     command: "curl --cacert /home/{{ ansible_user }}/root-ca.crt https://echo.example.com/banana"
     register: response_banana
     failed_when: "'banana' not in response_banana.stdout"
+
+  - name: Delete root CA certfifcate file
+    file:
+      path: "/home/{{ ansible_user }}/root-ca.crt"
+      state: absent
+

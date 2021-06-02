@@ -10,3 +10,4 @@
 - name: Unseal vault pods
   command: "kubectl exec {{ pod_name }} -n vault -- vault operator unseal {{ item }}"
   loop: "{{ unseal_key }}"
+  no_log: true
