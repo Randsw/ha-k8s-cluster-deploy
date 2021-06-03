@@ -13,17 +13,17 @@ Deploy HA kubernetes cluster with 3 contol-plane nodes, 3 worker nodes and 2 GW 
    * [Ansible](#ansible)
    * [Vagrant](#vagrant)
 2. [System Overview](#system-overview)
-   * [Virtual Machines](#virtual-vachines)
-   * [Kubernetes High Availability](#k8s-ha)
-   * [LoadBalancer Service](#lb-service)
+   * [Virtual Machines](#virtual-machines)
+   * [Kubernetes High Availability](#kubernetes-high-availability)
+   * [LoadBalancer Service](#loadbalancer-service)
    * [Storage class](#storage-class)
-   * [Example application](#example-app)
-3. [Cluster installation](#cluster-install)
-4. [Cluster Configuration](#cluster-config)
+   * [Example application](#example-application)
+3. [Cluster Installation](#cluster-installation)
+4. [Cluster Configuration](#cluster-configuration)
    * [Hosts](#hosts)
-   * [Kubernetes](#k8s)
-   * [Hashicorp Vault](#vault)
-   * [Example Application Configuration](#example-app-config)
+   * [Kubernetes](#kubernetes)
+   * [Hashicorp Vault](#hashicorp-vault)
+   * [Example Application Configuration](#example-application-configuration)
 
 
 ## Requirements
@@ -32,6 +32,7 @@ Deploy HA kubernetes cluster with 3 contol-plane nodes, 3 worker nodes and 2 GW 
 
 * 4 Processor core
 * 16 GB of RAM
+* Linux OS 64-bit (prefferd Ubuntu 18.04 and newer)
 
 ### Ansible
 
@@ -126,7 +127,7 @@ All Private key, certificate for that users and kubectl config file stored in `~
 
 ![echo-application](images/k8s-ha-cluster-app.png)
 
-## Cluster installation
+## Cluster Installation
 
 Configure `Vagrantfile` with your variable
 
@@ -144,6 +145,8 @@ Create and start VM
 
 Provision VM with ansible
 `ansible-playbook -i inventories/k8s-ha-cluster/hosts.yml --ask-become-pass k8s-cluster-deploy.yml`
+
+With `--ask-become-pass` key Ansible ask the `sudo` pass on ansible-playbook executor host. This password used for add entry for gateway1 host to /etc/hosts file. Using this entry provide access outside of cluster to Kubernetes apiserver for cluster administration and to Example application as regular user.
 
 ## Cluster Configuration
 
