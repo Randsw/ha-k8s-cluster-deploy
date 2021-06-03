@@ -167,3 +167,8 @@
   until: kubeadm_secret.stdout.find("kubeadm-certs") != -1
   retries: 10
   delay: 10
+
+- name: Wait for etcd finish all init operation
+  pause:
+    seconds: "60"
+    prompt: "Wait for etcd finish all init operation"
