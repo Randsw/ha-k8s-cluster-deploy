@@ -170,5 +170,5 @@
 
 - name: Wait for etcd finish all init operation
   pause:
-    seconds: "60"
+    seconds: "180"
     prompt: "Wait for etcd finish all init operation"
