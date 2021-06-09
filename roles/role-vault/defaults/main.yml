@@ -12,3 +12,6 @@ root_ca_name: "Demo Root Certificate Authority"
 
 #Root Certificate Authority certificate filename
 root_ca_cert_filename: "demo-root-ca"
+
+# Vault pod toleration
+vault_taint: node-role.kubernetes.io/worker

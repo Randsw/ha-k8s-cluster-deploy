@@ -17,17 +17,17 @@
       installCRDs: true
       replicaCount: 3
       tolerations:
-        - key: node-role.kubernetes.io/worker
+        - key: "{{ cert_manager_taint }}"
           effect: NoSchedule
       webhook:
         replicaCount: 2
         tolerations:
-          - key: node-role.kubernetes.io/worker
+          - key: "{{ cert_manager_taint }}"
             effect: NoSchedule
       cainjector:
         replicaCount: 2
         tolerations:
-          - key: node-role.kubernetes.io/worker
+          - key: "{{ cert_manager_taint }}"
             effect: NoSchedule  
 
 - name: Wait for cert-manager pods become ready

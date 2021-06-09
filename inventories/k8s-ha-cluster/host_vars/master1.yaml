@@ -22,6 +22,9 @@ kubernetes_apiserver_certSANs:
 #Echo app chart name
 chart_name_app: echo-app
 
+#Echo app toleration
+echo_app_taint: node-role.kubernetes.io/worker
+
 #k8s cert-manager issuer CRD name 
 issuer_name: echo.example.com-issuer
 
@@ -61,6 +64,9 @@ users:
   - username: echo-app-dev
     default_role: edit
     
+########################### Cert-manager variables #####################################
+
+cert_manager_taint: node-role.kubernetes.io/worker
 
 ########################### Hashicorp Vault variables #####################################
 #Root Certificate Authority name
@@ -68,3 +74,10 @@ root_ca_name: "Demo Root Certificate Authority"
 
 #Root Certificate Authority certificate filename
 root_ca_cert_filename: "demo-root-ca"
+
+# Vault pod toleration
+vault_taint: node-role.kubernetes.io/worker
+
+########################### Cluster monitoring variables ##################################
+monitoring_namespace: monitoring
+

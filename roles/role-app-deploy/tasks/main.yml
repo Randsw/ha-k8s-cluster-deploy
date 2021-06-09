@@ -13,6 +13,10 @@
     release_namespace: "{{ k8s_namespace}}"
     create_namespace: yes
     force: yes
+    values:
+      tolerations:
+        - effect: NoSchedule
+          key: "{{ echo_app_taint }}"
 
 - name: Wait for echo-app pods become ready
   shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=60s"

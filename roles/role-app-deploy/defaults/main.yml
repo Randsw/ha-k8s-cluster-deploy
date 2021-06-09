@@ -43,3 +43,5 @@ allow_subdomains: "true"
 
 #Maximum certificate ttl
 max_cert_ttl: "15m"
+
+echo_app_taint: node-role.kubernetes.io/worker

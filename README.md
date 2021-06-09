@@ -201,7 +201,27 @@ TODO:
 
 Monitoring notice:
 
-1. Deploy kube-prometheus-stack. Add correct kubernetes scheduler, etcd and control manager ports
+1. Deploy kube-prometheus-stack. 
+   Change parameters in kube-prometheus-stack helm chart:
+
+    kubeControllerManager:
+      service:
+        targetPort: 10257
+      serviceMonitor:
+        https: true
+        insecureSkipVerify: true
+
+    kubeScheduler:
+      service:
+        targetPort: 10259
+      serviceMonitor:
+        https: true
+        insecureSkipVerify: true
+    kubeEtcd:
+      service:
+        targetPort: 2381    
+
+!!!!! Dont forget about toleration!!!!!!!!!!!!!!!!!
 2. Deploy ingress-nginx with metrics enable
    metrics:
     enabled: true
@@ -251,3 +271,24 @@ Monitoring notice:
             summary: More than 5% of all requests returned 4XX, this requires your attention
 
 3. Deploy grafana dashboard via configmap with label **grafana_dashboard: "1"**
+
+4. In kubeadm setup we must set bind-address in controller-manager and scheduler to node ip address
+   In etcd we must set --listen-metrics-urls= to node ip address
+
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.16.0
+controllerManager:
+  extraArgs:
+    cluster-signing-key-file: /home/johndoe/keys/ca.key
+    bind-address: {{ node ip address }}   
+    deployment-controller-sync-period: "50"
+
+etcd:
+    local:
+      extraArgs:
+        listen-metrics-urls: {{ node ip address }}   
+
+scheduler:
+  extraArgs:
+    bind-address: {{ node ip address }} 

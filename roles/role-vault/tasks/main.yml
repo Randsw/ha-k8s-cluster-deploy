@@ -23,11 +23,11 @@
     values:
       injector:
         tolerations: |
-          - key: node-role.kubernetes.io/worker
+          - key: "{{ vault_taint }}"
             effect: NoSchedule
       server:
         tolerations: |
-          - key: node-role.kubernetes.io/worker
+          - key: "{{ vault_taint }}"
             effect: NoSchedule
         ha:
           enabled: true

@@ -25,5 +25,15 @@
             tolerations:
             - effect: NoSchedule
               key: "{{ ingress_taint }}"
-      
 
+- name: Add NGINX ingress grafana dashboard
+  command: 
+      
+- name: Add NGINX ingress grafana dashboard
+community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
+    template: 'ingress-dashboard-cm.yaml.j2'
+    validate:
+      fail_on_error: yes
+      
