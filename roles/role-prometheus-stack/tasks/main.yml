@@ -1,0 +1,68 @@
+---
+- name: Add kube-prometheus-stack chart repo
+  community.kubernetes.helm_repository:
+    name: prometheus-community
+    repo_url: "https://prometheus-community.github.io/helm-charts"
+
+- name: Update helm repo
+  command: helm repo update
+
+- name: Deploy kube-prometheus-stack chart inside monitoring namespace with values
+  community.kubernetes.helm:
+    name: monitoring
+    chart_ref: prometheus-community/kube-prometheus-stack
+    release_namespace: monitoring
+    create_namespace: yes
+    force: yes
+    values:
+      alertmanager:
+        alertmanagerSpec:
+          tolerations:
+            - effect: NoSchedule
+              key: "{{ prometheus_stack_taint }}"
+      grafana:
+        image:
+          repository: grafana/grafana
+          tag: 7.5.5 # Some problem with 8.0.0 version. Grafana web interface error
+          sha: ""
+          pullPolicy: IfNotPresent
+        tolerations:
+          - effect: NoSchedule
+            key: "{{ prometheus_stack_taint }}"
+      prometheusOperator:
+        admissionWebhooks:
+          patch:
+            tolerations:
+              - effect: NoSchedule
+                key: "{{ prometheus_stack_taint }}"           
+        tolerations:
+          - effect: NoSchedule
+            key: "{{ prometheus_stack_taint }}" 
+      prometheus:
+        prometheusSpec:                
+          tolerations:
+            - effect: NoSchedule
+              key: "{{ prometheus_stack_taint }}"
+      kube-state-metrics:
+        tolerations:
+          - effect: NoSchedule
+            key: "{{ prometheus_stack_taint }}"
+      kubeControllerManager:
+        service:
+          targetPort: 10257
+        serviceMonitor:
+          https: true
+          insecureSkipVerify: true
+      kubeScheduler:
+        service:
+          targetPort: 10259
+        serviceMonitor:
+          https: true                                                                                                                                              
+          insecureSkipVerify: true
+      kubeEtcd:
+        service:
+          targetPort: 2381
+
+
+- name: Wait for kube-prometheus-stack pods become ready
+  shell: "kubectl wait --namespace=monitoring --for=condition=Ready --all pods --timeout=600s"

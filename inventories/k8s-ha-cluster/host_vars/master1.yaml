@@ -65,7 +65,7 @@ users:
     default_role: edit
     
 ########################### Cert-manager variables #####################################
-
+# Cert-manager pod toleration
 cert_manager_taint: node-role.kubernetes.io/worker
 
 ########################### Hashicorp Vault variables #####################################
@@ -79,5 +79,8 @@ root_ca_cert_filename: "demo-root-ca"
 vault_taint: node-role.kubernetes.io/worker
 
 ########################### Cluster monitoring variables ##################################
+
 monitoring_namespace: monitoring
 
+#Kube-prometheus-stack pod toleration
+prometheus_stack_taint: node-role.kubernetes.io/worker
