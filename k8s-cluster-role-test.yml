@@ -45,30 +45,30 @@
 #       loop:
 #       - { search: 'https://k8s-cp:8443', replace: 'https://k8s-cp:6443' }
 
-  tasks:   
+  # tasks:   
   
-   - include_tasks: k8s_cp_bind_address_change.yml
-      loop: "{{ k8s_manifest_file }}"
-      loop_control:
-        loop_var: k8s_manifests
+  #   - include_tasks: k8s_cp_bind_address_change.yml
+  #     loop: "{{ k8s_manifest_file }}"
+  #     loop_control:
+  #       loop_var: k8s_manifests
 
-    - name: Change metrics listen url in etcd manifest
-      lineinfile:
-        path: etcd.yaml
-        regexp: '(^\s*-\s--listen-metrics-urls\=\s*){{ item.search }}$'
-        line:  '\1{{ item.replace }}'
-        backrefs: yes
-      loop:
-      - { search: "http://127.0.0.1:2381", replace: "http://{{ ansible_host_test }}:2381" }
+  #   - name: Change metrics listen url in etcd manifest
+  #     lineinfile:
+  #       path: etcd.yaml
+  #       regexp: '(^\s*-\s--listen-metrics-urls\=\s*){{ item.search }}$'
+  #       line:  '\1{{ item.replace }}'
+  #       backrefs: yes
+  #     loop:
+  #     - { search: "http://127.0.0.1:2381", replace: "http://{{ ansible_host_test }}:2381" }
     
-
-    - include_tasks: k8s_cp_probes_address_changer.yml
-      loop: "{{ k8s_manifest_file }}"
-      loop_control:
-        loop_var: k8s_manifests
+  #   - include_tasks: k8s_cp_probes_address_changer.yml
+  #     loop: "{{ k8s_manifest_file }}"
+  #     loop_control:
+  #       loop_var: k8s_manifests
 
 
   roles:
+    - { role: role-k8s_manifests }
     # - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
     # - { role: role-helm, when: kubernetes_role == 'first-master'}
     # - { role: role-ingress, when: kubernetes_role == 'first-master'}

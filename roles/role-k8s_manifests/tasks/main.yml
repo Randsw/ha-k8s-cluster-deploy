@@ -51,6 +51,15 @@
     kubectl patch storageclass local-path 
     -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
+- name: Wait for pods created
+  become: false
+  command: kubectl get po -A
+  register: result
+  until: result.stdout.find("{{ item }}") != -1
+  retries: 10
+  delay: 5
+  loop: "{{ k8s_manifests_namespaces }}"
+
 - name: Wait for service pods become ready
   command: "kubectl wait --namespace={{ item }} --for=condition=Ready --all pods --timeout=600s"
   loop: "{{ k8s_manifests_namespaces }}"

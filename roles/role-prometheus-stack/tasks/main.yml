@@ -29,6 +29,13 @@
         tolerations:
           - effect: NoSchedule
             key: "{{ prometheus_stack_taint }}"
+        ingress:
+          enabled: true
+          hosts: grafana.example.com
+          path: /
+          pathType: Prefix
+          annotations:
+            kubernetes.io/ingress.class: nginx
       prometheusOperator:
         admissionWebhooks:
           patch:

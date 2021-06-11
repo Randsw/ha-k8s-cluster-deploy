@@ -1,1 +1,1 @@
-prometheus_stack_taint: node-role.kubernetes.io/gw #!!!!!!worker
+prometheus_stack_taint: node-role.kubernetes.io/worker
