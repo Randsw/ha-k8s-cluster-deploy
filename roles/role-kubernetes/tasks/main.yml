@@ -121,3 +121,26 @@
   loop_control:
     loop_var: node
   when: kubernetes_role == 'first-master'
+
+- name: Configure proper listen ip address for kube-prometheus-stack metrics
+  block:
+    - include_tasks: k8s_cp_bind_address_change.yml
+       loop: "{{ k8s_cp_manifest_file }}"
+       loop_control:
+         loop_var: k8s_manifests
+    
+     - name: Change metrics listen url in etcd manifest
+       lineinfile:
+         path: /etc/kubernetes/manifests/etcd.yaml
+         regexp: '(^\s*-\s--listen-metrics-urls\=\s*){{ item.search }}$'
+         line:  '\1{{ item.replace }}'
+         backrefs: yes
+       loop:
+       - { search: "http://127.0.0.1:2381", replace: "http://{{ ansible_host }}:2381" }
+     
+     - include_tasks: k8s_cp_probes_address_changer.yml
+       loop: "{{ k8s_cp_manifest_file }}"
+       loop_control:
+         loop_var: k8s_manifests
+         
+  when: inventory_hostname in groups['k8s_ha_masters']

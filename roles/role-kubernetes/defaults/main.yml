@@ -54,3 +54,8 @@ kubernetes_calico_manifest_file: https://docs.projectcalico.org/manifests/calico
 
 #Cillium config files
 cillium_manifest_file: "https://raw.githubusercontent.com/cilium/cilium/{{ cillium_version }}/install/kubernetes/quick-install.yaml"
+
+k8s_cp_manifest_file:
+  - /etc/kubernetes/manifests/kube-controller-manager.yaml
+  - /etc/kubernetes/manifests/kube-scheduler.yaml
+  - /etc/kubernetes/manifests/etcd.yaml  

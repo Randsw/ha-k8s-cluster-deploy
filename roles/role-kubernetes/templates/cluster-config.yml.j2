@@ -13,16 +13,6 @@ dns:
   type: CoreDNS
 clusterName: {{ kubernetes_cluster_name }}
 controlPlaneEndpoint: k8s-cp:{{ k8s_cp_port }}
-controllerManager:
-  extraArgs:
-    bind-address: {{ ansible_host }}
-etcd:
-    local:
-      extraArgs:
-        listen-metrics-urls: {{ ansible_host }}
-scheduler:
-  extraArgs:
-    bind-address: {{ ansible_host }} 
 networking:
   podSubnet: {{ kubernetes_pod_network.cidr }}
   dnsDomain: {{ kubernetes_cluster_domain_name}}
