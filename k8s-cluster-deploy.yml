@@ -92,6 +92,9 @@
         - name: Install openshift
           pip:
             name: openshift
+          loop:
+            - kubernetes-validate
+            - openshift
       when: kubernetes_role == 'first-master'
    
   roles:
@@ -110,7 +113,7 @@
     - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
     - { role: role-prometheus-stack, when: kubernetes_role == 'first-master' }
     - { role: role-ingress, when: kubernetes_role == 'first-master'}
-    #- { role: role-vault, when: kubernetes_role == 'first-master' }
-    #- { role: role-certmanager, when: kubernetes_role == 'first-master' }
-    #- { role: role-app-deploy, when: kubernetes_role == 'first-master'}
-    #- { role: role-k8s-ns-users, when: kubernetes_role == 'first-master'}
+    - { role: role-vault, when: kubernetes_role == 'first-master' }
+    - { role: role-certmanager, when: kubernetes_role == 'first-master' }
+    - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
+    - { role: role-k8s-ns-users, when: kubernetes_role == 'first-master'}

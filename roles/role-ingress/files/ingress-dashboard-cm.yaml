@@ -6,7 +6,7 @@ metadata:
   name: nginx-ingress-dashboard
   # I dont think the configmap has to be in a certain namespace, I just did it to keep
   # all the dashboards in the same namespace.
-  namespace: {{ monitoring_namespace }} 
+  #namespace: {{ monitoring_namespace }} 
 data:
   nginx.json: |-
     {

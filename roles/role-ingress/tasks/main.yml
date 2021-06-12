@@ -30,13 +30,13 @@
           serviceMonitor:
             enabled: true
             additionalLabels:
-              release: monitoring !!!! important check *prometheus* CRD
+              release: monitoring
           prometheusRule:
             enabled: true
             namespace: monitoring 
             additionalLabels:
-              release: monitoring !!!! important check *prometheus* CRD
-              app: kube-prometheus-stack !!!!! important check *prometheus* CRD
+              release: monitoring
+              app: kube-prometheus-stack
             rules:
               # These are just examples rules, please adapt them to your needs
               - alert: NGINXConfigFailed
@@ -76,7 +76,8 @@
   community.kubernetes.k8s:
     state: present
     kubeconfig: "{{ k8s_kubeconfig }}"
-    template: 'ingress-dashboard-cm.yaml.j2'
+    definition: "{{ lookup('file', 'roles/role-ingress/files/ingress-dashboard-cm.yaml') | from_yaml }}"
+    namespace: "{{ monitoring_namespace }}"
     validate:
       fail_on_error: yes
       

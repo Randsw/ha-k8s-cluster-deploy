@@ -31,7 +31,8 @@
             key: "{{ prometheus_stack_taint }}"
         ingress:
           enabled: true
-          hosts: grafana.example.com
+          hosts: 
+            - grafana.example.com
           path: /
           pathType: Prefix
           annotations:
