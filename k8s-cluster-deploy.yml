@@ -91,7 +91,7 @@
            
         - name: Install openshift
           pip:
-            name: openshift
+            name: "{{ item }}"
           loop:
             - kubernetes-validate
             - openshift
