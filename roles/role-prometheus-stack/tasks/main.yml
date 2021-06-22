@@ -37,6 +37,9 @@
           pathType: Prefix
           annotations:
             kubernetes.io/ingress.class: nginx
+          sidecar:
+            dashboards:
+              searchNamespace: ALL
       prometheusOperator:
         admissionWebhooks:
           patch:

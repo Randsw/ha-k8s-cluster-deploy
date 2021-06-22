@@ -1,0 +1,4 @@
+---
+elastic_operator_version: "1.6.0"
+elastic_namespace: logging
+elastic_operator_taint: node-role.kubernetes.io/worker
