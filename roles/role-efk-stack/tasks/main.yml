@@ -29,4 +29,47 @@
       config:
         metricsPort: 8088
 
-        
+- name: Deploy Elasticsearch
+  community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
+    definition:
+      apiVersion: elasticsearch.k8s.elastic.co/v1
+      kind: Elasticsearch
+      metadata:
+        name: "{{ elastic_name }}"
+      spec:
+        version: "{{ elastic_version }}"
+        nodeSets:
+        - name: default
+          count: "{{ elastic_count }}"
+          config:
+            node.master: true
+            node.data: true
+            node.ingest: true
+            node.store.allow_mmap: false
+          podTemplate:
+            spec:
+              tolerations:
+                - effect: NoSchedule
+                  key: {{ elastic_app_taint }}
+
+- name: Deploy Kibana
+  community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
+    definition:
+      apiVersion: kibana.k8s.elastic.co/v1
+      kind: Kibana
+      metadata:
+        name: "{{ kibana_name }}"
+      spec:
+        version: "{{ elastic_version }}"
+        count: "{{ kibana_count }}"
+        elasticsearchRef:
+          name: "{{ elastic_name }}"
+        podTemplate:
+          spec:
+            tolerations:
+              - effect: NoSchedule
+                key: {{ elastic_app_taint }}

@@ -84,3 +84,14 @@ monitoring_namespace: monitoring
 
 #Kube-prometheus-stack pod toleration
 prometheus_stack_taint: node-role.kubernetes.io/worker
+
+########################### Cluster name ##################################################
+elastic_operator_version: "1.6.0"
+elastic_namespace: logging
+elastic_operator_taint: node-role.kubernetes.io/worker
+elastic_version: "7.10.0"
+elastic_app_taint: node-role.kubernetes.io/gw
+elastic_name: elasticsearch
+kibana_name: kibana
+kibana_count: 1
+elastic_count: 1
