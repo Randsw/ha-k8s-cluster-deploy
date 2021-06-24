@@ -17,6 +17,8 @@
     values:
       controller:
         kind: "{{ controller_kind }}"
+        podAnnotations:
+          fluentbit.io/parser: "{{ fluentbit_parser }}"
         tolerations:
         - effect: NoSchedule
           key: "{{ ingress_taint }}"
