@@ -4,14 +4,19 @@
     name: elastic
     repo_url: "https://helm.elastic.co"
 
+- name: Add fluentbit chart repo
+  community.kubernetes.helm_repository:
+    name: fluentbit
+    repo_url: "https://fluent.github.io/helm-charts"
+
 - name: Update helm repo
   command: helm repo update
 
-- name: Deploy elastic chart inside {{ elastic_namespace }} namespace with values
+- name: Deploy elastic-operator chart inside "{{ elastic_namespace }}" namespace with values
   community.kubernetes.helm:
     name: elastic-operator
     chart_ref: elastic/eck-operator
-    release_namespace: elastic_namespace
+    release_namespace: "{{ elastic_namespace }}"
     create_namespace: yes
     force: yes
     values:
@@ -22,12 +27,25 @@
           effect: NoSchedule
       podMonitor:
         enabled: true
-        namespace: monitoring
+        namespace: "{{ monitoring_namespace }}"
         labels:
           release: monitoring
           app: kube-prometheus-stack
       config:
         metricsPort: 8088
+
+- name: Create logging namespace
+  community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{k8s_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          app: metallb
+        name: "{{ logging_namespace }}"
+
 
 - name: Deploy Elasticsearch
   community.kubernetes.k8s:
@@ -38,6 +56,7 @@
       kind: Elasticsearch
       metadata:
         name: "{{ elastic_name }}"
+        namespace: "{{ logging_namespace }}"
       spec:
         version: "{{ elastic_version }}"
         nodeSets:
@@ -63,6 +82,7 @@
       kind: Kibana
       metadata:
         name: "{{ kibana_name }}"
+        namespace: "{{ logging_namespace }}"
       spec:
         version: "{{ elastic_version }}"
         count: "{{ kibana_count }}"
@@ -73,3 +93,58 @@
             tolerations:
               - effect: NoSchedule
                 key: {{ elastic_app_taint }}
+
+- name: Deploy Fluentbit chart inside "{{ elastic_namespace }}" namespace with values
+  community.kubernetes.helm:
+    name: fluentbit
+    chart_ref: fluent/fluent-bit
+    release_namespace: "{{ logging_namespace }}"
+    create_namespace: yes
+    force: yes
+    values:
+      config:
+        service: "{{ fluent_service }}"
+        ## https://docs.fluentbit.io/manual/pipeline/inputs
+        inputs: "{{ fluentbit_inputs }}"
+        ## https://docs.fluentbit.io/manual/pipeline/filters
+        filters: "{{ fluentbit_filters }}"
+        ## https://docs.fluentbit.io/manual/pipeline/outputs
+        outputs: "{{ fluentbit_outputs }}"
+        ## https://docs.fluentbit.io/manual/pipeline/parsers
+        customParsers: "{{ fluentbit_customParsers }}"
+      serviceMonitor:
+        enabled: "true"
+        namespace: logging
+        interval: 10s
+        scrapeTimeout: 10s
+        selector:
+          release: monitoring
+      prometheusRule:
+        enabled: true
+        namespace: monitoring
+        additionalLabels:
+          release: monitoring
+          app: kube-prometheus-stack
+        rules:
+        - alert: NoOutputBytesProcessed
+          expr: rate(fluentbit_output_proc_bytes_total[5m]) == 0
+          annotations:
+            message: |
+              Fluent Bit instance {{ $labels.instance }}'s output plugin {{ $labels.name }} has not processed any
+              bytes for at least 15 minutes.
+            summary: No Output Bytes Processed
+          for: 15m
+          labels:
+            severity: critical
+      dashboards:
+        enabled: true
+        labelKey: grafana_dashboard
+        annotations: {}
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/gw
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/worker
+          effect: NoSchedule
+
