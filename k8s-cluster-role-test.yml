@@ -72,7 +72,7 @@
     #- { role: role-k8s_manifests }
     # - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
     # - { role: role-helm, when: kubernetes_role == 'first-master'}
-    - { role: role-ingress }
+    - { role: role-efk-stack }
     # - { role: role-vault, when: kubernetes_role == 'first-master' }
     # - { role: role-certmanager, when: kubernetes_role == 'first-master' }
     # - { role: role-app-deploy, when: kubernetes_role == 'first-master'}

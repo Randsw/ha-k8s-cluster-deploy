@@ -1,16 +1,33 @@
----
 elastic_operator_version: "1.6.0"
+# Namespace for elastic-operator deploy
 elastic_namespace: elastic-operator
+# Elastic Operator pod toleration
 elastic_operator_taint: node-role.kubernetes.io/worker
+
 elastic_version: "7.10.0"
+#Elasticsearch and kibana pod toleration
 elastic_app_taint: node-role.kubernetes.io/gw
+# Elasticsearch CRD name
 elastic_name: elasticsearch
+# Kibana CRD name
 kibana_name: kibana
+#Kibana instance number
 kibana_count: 1
+#Elasticsearch instance number
 elastic_count: 1
+# Elasticsearch and Kibana pod toleration
 logging_namespace: logging
 
+#Fluentbit pod toleration
+fluentbit_toleration:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/gw
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/worker
+    effect: NoSchedu  
 
+# Fluentbit config
 fluentbit_service: |
   [SERVICE]
       Flush 1
@@ -22,6 +39,7 @@ fluentbit_service: |
       HTTP_Listen 0.0.0.0
       HTTP_Port {{ .Values.service.port }}
 
+## https://docs.fluentbit.io/manual/pipeline/inputs
 fluentbit_inputs: |
   [INPUT]
       Name tail
@@ -36,6 +54,7 @@ fluentbit_inputs: |
       Tag host.*
       Read_From_Tail On
 
+## https://docs.fluentbit.io/manual/pipeline/filters
 fluentbit_filter: |
   [FILTER]
       Name kubernetes
@@ -44,7 +63,7 @@ fluentbit_filter: |
       Keep_Log Off
       K8S-Logging.Parser On
       K8S-Logging.Exclude On
-
+## https://docs.fluentbit.io/manual/pipeline/outputs
 fluentbit_output: |
   [OUTPUT]
       Name es
@@ -72,7 +91,7 @@ fluentbit_output: |
       Retry_Limit False
       Trace_Error On
       Replace_Dots On
-
+## https://docs.fluentbit.io/manual/pipeline/parsers
 fluentbit_customParsers: |
   [PARSER]
       Name docker_no_time
@@ -88,9 +107,9 @@ fluentbit_customParsers: |
       Time_Key time
       Time_Format %d/%b/%Y:%H:%M:%S %z
       
-    [PARSER]
-        Name   echo_app_parser
-        Format regex
-        Regex (?<log_time>[^\]]*) (?<servername>[^ ]*) (?<remote_addr>[^ ]*) "(?<method>\S+) (?<request>[^\"]*)" (?<code>[^ ]*) (?<size>[^ ]*) "(?<agent>[^\"]*)" (?<duration>[^ ]*)
-        Time_Key log_time
-        Time_Format %Y/%m/%d %H:%M:%S   
+  [PARSER]
+      Name   echo_app_parser
+      Format regex
+      Regex (?<log_time>[^\]]*) (?<servername>[^ ]*) (?<remote_addr>[^ ]*) "(?<method>\S+) (?<request>[^\"]*)" (?<code>[^ ]*) (?<size>[^ ]*) "(?<agent>[^\"]*)" (?<duration>[^ ]*)
+      Time_Key log_time
+      Time_Format %Y/%m/%d %H:%M:%S   

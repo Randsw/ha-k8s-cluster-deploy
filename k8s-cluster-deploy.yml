@@ -115,5 +115,6 @@
     - { role: role-ingress, when: kubernetes_role == 'first-master'}
     - { role: role-vault, when: kubernetes_role == 'first-master' }
     - { role: role-certmanager, when: kubernetes_role == 'first-master' }
+    - { role: role-efk-stack, when: kubernetes_role == 'first-master' }
     - { role: role-app-deploy, when: kubernetes_role == 'first-master'}
     - { role: role-k8s-ns-users, when: kubernetes_role == 'first-master'}
