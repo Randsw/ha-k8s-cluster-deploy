@@ -23,7 +23,8 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: "issuer"
 
-podAnnotations: {}
+podAnnotations:
+  fluentbit.io/parser: "echo_app_parser" 
 
 podSecurityContext: {}
   # fsGroup: 2000

@@ -86,4 +86,11 @@ fluentbit_customParsers: |
       Format regex
       Regex (?<remote_addr>[^ ]*) - - \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<request>[^\"]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*) "(?<referer>[^\"]*)" "(?<agent>[^\"]*)"
       Time_Key time
-      Time_Format %d/%b/%Y:%H:%M:%S %z   
+      Time_Format %d/%b/%Y:%H:%M:%S %z
+      
+    [PARSER]
+        Name   echo_app_parser
+        Format regex
+        Regex (?<log_time>[^\]]*) (?<servername>[^ ]*) (?<remote_addr>[^ ]*) "(?<method>\S+) (?<request>[^\"]*)" (?<code>[^ ]*) (?<size>[^ ]*) "(?<agent>[^\"]*)" (?<duration>[^ ]*)
+        Time_Key log_time
+        Time_Format %Y/%m/%d %H:%M:%S   
