@@ -18,6 +18,18 @@ elastic_count: 1
 # Elasticsearch and Kibana pod toleration
 logging_namespace: logging
 
+#Kibana ingress name
+kibana_ingress_name: kibana-ingress
+
+#Kibana hostname
+kibana_host: kibana.example.com
+
+#Kibana Ingress TLS secret name
+kibana_tls_secret_name: echo-example-com-tls
+
+#Kibana k8s service name
+kibana_service_name: "{{ kibana_name }}-kb-http"
+
 #Fluentbit pod toleration
 fluentbit_toleration:
   - key: node-role.kubernetes.io/master
