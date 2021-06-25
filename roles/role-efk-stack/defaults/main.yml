@@ -6,7 +6,7 @@ elastic_operator_taint: node-role.kubernetes.io/worker
 
 elastic_version: "7.10.0"
 #Elasticsearch and kibana pod toleration
-elastic_app_taint: node-role.kubernetes.io/gw
+elastic_app_taint: node-role.kubernetes.io/worker
 # Elasticsearch CRD name
 elastic_name: elasticsearch
 # Kibana CRD name
@@ -49,17 +49,17 @@ fluentbit_service: |
       Parsers_File custom_parsers.conf
       HTTP_Server On
       HTTP_Listen 0.0.0.0
-      HTTP_Port {{ .Values.service.port }}
+      HTTP_Port {{ '{{' }} .Values.service.port {{ '}}' }}
 
 ## https://docs.fluentbit.io/manual/pipeline/inputs
-fluentbit_inputs: |
+fluentbit_input: |
   [INPUT]
       Name tail
       Path /var/log/containers/*.log
       Parser docker
       Tag kube.*
       Mem_Buf_Limit 5MB
-    Skip_Long_Lines On
+      Skip_Long_Lines On
 
   [INPUT]
       Name systemd
@@ -82,7 +82,7 @@ fluentbit_output: |
       Match kube.*
       Host minikube-logging-es-http.logging.svc
       HTTP_User elastic
-      HTTP_Passwd dw1S9KvO13Y355Z3BDytGZ67
+      HTTP_Passwd {{ elastic_pass.stdout }}
       tls             On
       tls.verify      Off
       Logstash_Format On
@@ -95,7 +95,7 @@ fluentbit_output: |
       Match host.*
       Host minikube-logging-es-http.logging.svc
       HTTP_User elastic
-      HTTP_Passwd dw1S9KvO13Y355Z3BDytGZ67
+      HTTP_Passwd {{ elastic_pass.stdout }}
       tls             On
       tls.verify      Off
       Logstash_Format On
@@ -124,4 +124,11 @@ fluentbit_customParsers: |
       Format regex
       Regex (?<log_time>[^\]]*) (?<servername>[^ ]*) (?<remote_addr>[^ ]*) "(?<method>\S+) (?<request>[^\"]*)" (?<code>[^ ]*) (?<size>[^ ]*) "(?<agent>[^\"]*)" (?<duration>[^ ]*)
       Time_Key log_time
-      Time_Format %Y/%m/%d %H:%M:%S   
+      Time_Format %Y/%m/%d %H:%M:%S 
+
+  [PARSER]
+      Name        syslog
+      Format      regex
+      Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+      Time_Key    time
+      Time_Format %b %d %H:%M:%S

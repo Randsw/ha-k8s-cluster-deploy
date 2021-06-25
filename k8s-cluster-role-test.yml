@@ -8,6 +8,7 @@
       - kube-scheduler.yaml
       - etcd.yaml
     k8s_kubeconfig: ~/.kube/admin.conf
+    monitoring_namespace: monitoring
 
   pre_tasks:
     # - name: Add taints to gw nodes

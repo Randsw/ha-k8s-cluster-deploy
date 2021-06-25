@@ -12,7 +12,7 @@
 - name: Update helm repo
   command: helm repo update
 
-- name: Deploy elastic-operator chart inside "{{ elastic_namespace }}" namespace with values
+- name: Deploy elastic-operator chart inside {{ elastic_namespace }} namespace with values
   community.kubernetes.helm:
     name: elastic-operator
     chart_ref: elastic/eck-operator
@@ -34,7 +34,7 @@
       config:
         metricsPort: 8088
 
-- name: Create logging namespace
+- name: Create {{ logging_namespace }} namespace
   community.kubernetes.k8s:
     state: present
     kubeconfig: "{{k8s_kubeconfig }}"
@@ -45,7 +45,6 @@
         labels:
           app: metallb
         name: "{{ logging_namespace }}"
-
 
 - name: Deploy Elasticsearch
   community.kubernetes.k8s:
@@ -71,7 +70,7 @@
             spec:
               tolerations:
                 - effect: NoSchedule
-                  key: {{ elastic_app_taint }}
+                  key: "{{ elastic_app_taint }}"
 
 - name: Deploy Kibana
   community.kubernetes.k8s:
@@ -92,7 +91,11 @@
           spec:
             tolerations:
               - effect: NoSchedule
-                key: {{ elastic_app_taint }}
+                key: "{{ elastic_app_taint }}"
+
+- name: Get Elastic password
+  command: "kubectl get secret {{ elastic_name }}-es-elastic-user -n {{ logging_namespace }} -o go-template='{{ '{{' }}.data.elastic | base64decode {{ '}}' }}'"
+  register: elastic_pass
 
 - name: Deploy Fluentbit chart inside "{{ elastic_namespace }}" namespace with values
   community.kubernetes.helm:
@@ -103,15 +106,20 @@
     force: yes
     values:
       config:
-        service: "{{ fluent_service }}"
+        service: | 
+          {{ fluentbit_service }}
         ## https://docs.fluentbit.io/manual/pipeline/inputs
-        inputs: "{{ fluentbit_inputs }}"
+        inputs: |
+          {{ fluentbit_input }}
         ## https://docs.fluentbit.io/manual/pipeline/filters
-        filters: "{{ fluentbit_filters }}"
+        filters: |
+          {{ fluentbit_filter }}
         ## https://docs.fluentbit.io/manual/pipeline/outputs
-        outputs: "{{ fluentbit_outputs }}"
+        outputs: |
+          {{ fluentbit_output }}
         ## https://docs.fluentbit.io/manual/pipeline/parsers
-        customParsers: "{{ fluentbit_customParsers }}"
+        customParsers: |
+          {{ fluentbit_customParsers }}
       serviceMonitor:
         enabled: "true"
         namespace: logging
@@ -130,7 +138,7 @@
           expr: rate(fluentbit_output_proc_bytes_total[5m]) == 0
           annotations:
             message: |
-              Fluent Bit instance {{ $labels.instance }}'s output plugin {{ $labels.name }} has not processed any
+              Fluent Bit instance {{ '{{' }} $labels.instance {{ '}}' }}'s output plugin {{ '{{' }} $labels.name {{ '}}' }} has not processed any
               bytes for at least 15 minutes.
             summary: No Output Bytes Processed
           for: 15m
