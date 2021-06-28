@@ -6,7 +6,7 @@
 
 - name: Add fluentbit chart repo
   community.kubernetes.helm_repository:
-    name: fluentbit
+    name: fluent
     repo_url: "https://fluent.github.io/helm-charts"
 
 - name: Update helm repo
@@ -92,6 +92,13 @@
             tolerations:
               - effect: NoSchedule
                 key: "{{ elastic_app_taint }}"
+
+- name: Wait for elasticsearch user secret creating
+  command: "kubectl get secret -n {{ logging_namespace }}"
+  register: es_secret
+  until: 'es_secret.stdout.find("{{ elastic_name }}-es-elastic-user") != -1'
+  retries: 10
+  delay: 10
 
 - name: Get Elastic password
   command: "kubectl get secret {{ elastic_name }}-es-elastic-user -n {{ logging_namespace }} -o go-template='{{ '{{' }}.data.elastic | base64decode {{ '}}' }}'"

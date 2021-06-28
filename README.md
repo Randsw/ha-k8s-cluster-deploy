@@ -193,6 +193,6 @@ Change `ansible_host` variable in all files in `inventories/k8s-ha-cluster/host_
 
 TODO:
 
-1. Set up monitioring usin kube-prometheus-stack
-2. Set up logging using banzai-cloud EFK stack
-3. Set up monitoring/loggint using Prometheus/Loki/Grafana stack
+1. Set loging driver to JSON for containerd
+2. Fix kibana ingress issue
+https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana-http-configuration.html

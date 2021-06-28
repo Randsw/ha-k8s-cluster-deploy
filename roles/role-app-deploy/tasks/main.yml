@@ -19,7 +19,7 @@
           key: "{{ echo_app_taint }}"
 
 - name: Wait for echo-app pods become ready
-  shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=60s"
+  shell: "kubectl wait --namespace={{ k8s_namespace }} --for=condition=Ready --all pods --timeout=600s"
   register: vault_ready
 
 - name: Get Token of service account

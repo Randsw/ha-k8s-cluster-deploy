@@ -5,7 +5,7 @@
   register: username_on_the_host
   changed_when: false
 
-- name: Get ansible host username
+- name: Get host username
   become: no
   command: whoami
   register: ansible_host_username

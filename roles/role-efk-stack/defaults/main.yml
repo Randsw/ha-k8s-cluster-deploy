@@ -56,7 +56,7 @@ fluentbit_input: |
   [INPUT]
       Name tail
       Path /var/log/containers/*.log
-      Parser docker
+      Parser cri
       Tag kube.*
       Mem_Buf_Limit 5MB
       Skip_Long_Lines On
@@ -80,7 +80,7 @@ fluentbit_output: |
   [OUTPUT]
       Name es
       Match kube.*
-      Host minikube-logging-es-http.logging.svc
+      Host {{ elastic_name }}-es-http.{{ logging_namespace }}.svc
       HTTP_User elastic
       HTTP_Passwd {{ elastic_pass.stdout }}
       tls             On
@@ -93,7 +93,7 @@ fluentbit_output: |
   [OUTPUT]
       Name es
       Match host.*
-      Host minikube-logging-es-http.logging.svc
+      Host {{ elastic_name }}-es-http.{{ logging_namespace }}.svc
       HTTP_User elastic
       HTTP_Passwd {{ elastic_pass.stdout }}
       tls             On
