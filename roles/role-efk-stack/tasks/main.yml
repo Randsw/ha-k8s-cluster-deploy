@@ -87,6 +87,10 @@
         count: "{{ kibana_count }}"
         elasticsearchRef:
           name: "{{ elastic_name }}"
+        http:
+          tls:
+            selfSignedCertificate:
+              disabled: true
         podTemplate:
           spec:
             tolerations:
@@ -170,10 +174,6 @@
         name: "{{ kibana_ingress_name }}"
         namespace: "{{ logging_namespace }}"
       spec:
-        tls:
-        - hosts:
-          - "{{ kibana_host }}"
-          secretName: "{{ kibana_tls_secret_name }}"
         rules:
         - host: "{{ kibana_host }}"
           http:
