@@ -80,7 +80,12 @@ vault_taint: node-role.kubernetes.io/worker
 
 ########################### Cluster monitoring variables ##################################
 
-monitoring_namespace: monitoring
+
+prometheus_stack_release_name: monitoring
+
+prometheus_stack_namespace: monitoring
+
+grafana_ingress_host: grafana.example.com
 
 #Kube-prometheus-stack pod toleration
 prometheus_stack_taint: node-role.kubernetes.io/worker

@@ -1,1 +1,4 @@
 prometheus_stack_taint: node-role.kubernetes.io/worker
+prometheus_stack_release_name: monitoring
+prometheus_stack_namespace: monitoring
+grafana_ingress_host: grafana.example.com

@@ -7,11 +7,11 @@
 - name: Update helm repo
   command: helm repo update
 
-- name: Deploy kube-prometheus-stack chart inside monitoring namespace with values
+- name: Deploy kube-prometheus-stack chart inside {{ prometheus_stack_namespace }} namespace with values
   community.kubernetes.helm:
-    name: monitoring
+    name: "{{ prometheus_stack_release_name }}"
     chart_ref: prometheus-community/kube-prometheus-stack
-    release_namespace: monitoring
+    release_namespace: "{{ prometheus_stack_namespace }}"
     create_namespace: yes
     force: yes
     values:
@@ -32,7 +32,7 @@
         ingress:
           enabled: true
           hosts: 
-            - grafana.example.com
+            - "{{ grafana_ingress_host }}"
           path: /
           pathType: Prefix
           annotations:
@@ -76,4 +76,4 @@
 
 
 - name: Wait for kube-prometheus-stack pods become ready
-  shell: "kubectl wait --namespace=monitoring --for=condition=Ready --all pods --timeout=600s"
+  shell: "kubectl wait --namespace={{ prometheus_stack_namespace }} --for=condition=Ready --all pods --timeout=600s"

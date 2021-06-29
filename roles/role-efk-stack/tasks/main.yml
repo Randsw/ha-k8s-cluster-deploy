@@ -27,9 +27,9 @@
           effect: NoSchedule
       podMonitor:
         enabled: true
-        namespace: "{{ monitoring_namespace }}"
+        namespace: "{{ prometheus_stack_namespace }}"
         labels:
-          release: monitoring
+          release: "{{ prometheus_stack_release_name }}"
           app: kube-prometheus-stack
       config:
         metricsPort: 8088
@@ -133,12 +133,12 @@
         interval: 10s
         scrapeTimeout: 10s
         selector:
-          release: monitoring
+          release: "{{ prometheus_stack_release_name }}"
       prometheusRule:
         enabled: true
-        namespace: monitoring
+        namespace: "{{ prometheus_stack_namespace }}"
         additionalLabels:
-          release: monitoring
+          release: "{{ prometheus_stack_release_name }}"
           app: kube-prometheus-stack
         rules:
         - alert: NoOutputBytesProcessed
@@ -151,10 +151,6 @@
           for: 15m
           labels:
             severity: critical
-      dashboards:
-        enabled: true
-        labelKey: grafana_dashboard
-        annotations: {}
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
@@ -188,4 +184,13 @@
                 service:
                   name: "{{ kibana_service_name }}"
                   port:
-                    number: 5601      
+                    number: 5601
+
+- name: Add fluentbit grafana dashboard
+  community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{ k8s_kubeconfig }}"
+    definition: "{{ lookup('file', 'roles/role-efk-stack/files/fluentbit-dashboard-cm.yaml') | from_yaml }}"
+    namespace: "{{ prometheus_stack_namespace }}"
+    validate:
+      fail_on_error: yes      

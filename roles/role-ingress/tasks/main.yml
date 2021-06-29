@@ -32,12 +32,12 @@
           serviceMonitor:
             enabled: true
             additionalLabels:
-              release: monitoring
+              release: "{{ prometheus_stack_release_name }}"
           prometheusRule:
             enabled: true
-            namespace: monitoring 
+            namespace: "{{ prometheus_stack_namespace }}" 
             additionalLabels:
-              release: monitoring
+              release: "{{ prometheus_stack_release_name }}"
               app: kube-prometheus-stack
             rules:
               # These are just examples rules, please adapt them to your needs
@@ -79,7 +79,7 @@
     state: present
     kubeconfig: "{{ k8s_kubeconfig }}"
     definition: "{{ lookup('file', 'roles/role-ingress/files/ingress-dashboard-cm.yaml') | from_yaml }}"
-    namespace: "{{ monitoring_namespace }}"
+    namespace: "{{ prometheus_stack_namespace }}"
     validate:
       fail_on_error: yes
       

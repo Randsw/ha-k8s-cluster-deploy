@@ -3,3 +3,7 @@ k8s_kubeconfig: /home/{{ ansible_user }}/.kube/admin.conf
 
 # Cert-manager pod toleration
 cert_manager_taint: node-role.kubernetes.io/worker
+
+prometheus_stack_release_name: monitoring
+
+prometheus_stack_namespace: monitoring
