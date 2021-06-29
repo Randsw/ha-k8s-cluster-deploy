@@ -108,7 +108,7 @@
 - hosts: k8s_ha_cluster
   become: no
   gather_facts: no
-  
+
   roles:
     - { role: role-k8s_manifests, when: kubernetes_role == 'first-master'}
     - { role: role-prometheus-stack, when: kubernetes_role == 'first-master' }

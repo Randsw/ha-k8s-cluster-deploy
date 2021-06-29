@@ -18,7 +18,7 @@
         enabled: true
         servicemonitor:
           enabled: true
-          namespace: "{{ prometheus_stack_namespace }}"
+          namespace: "cert-manager"
           prometheusInstance: "{{ prometheus_stack_release_name }}"
           targetPort: 9402
           path: /metrics

@@ -193,5 +193,6 @@ Change `ansible_host` variable in all files in `inventories/k8s-ha-cluster/host_
 
 TODO:
 
-1. Fix kibana ingress issue
+1. Create Fluentbit CM from JSON using helm template
+
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana-http-configuration.html

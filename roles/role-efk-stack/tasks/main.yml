@@ -43,7 +43,7 @@
       kind: Namespace
       metadata:
         labels:
-          app: metallb
+          app: logging
         name: "{{ logging_namespace }}"
 
 - name: Deploy Elasticsearch
@@ -108,7 +108,7 @@
   command: "kubectl get secret {{ elastic_name }}-es-elastic-user -n {{ logging_namespace }} -o go-template='{{ '{{' }}.data.elastic | base64decode {{ '}}' }}'"
   register: elastic_pass
 
-- name: Deploy Fluentbit chart inside "{{ elastic_namespace }}" namespace with values
+- name: Deploy Fluentbit chart inside "{{ logging_namespace }}" namespace with values
   community.kubernetes.helm:
     name: fluentbit
     chart_ref: fluent/fluent-bit

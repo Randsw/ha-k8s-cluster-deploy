@@ -56,7 +56,7 @@ fluentbit_input: |
   [INPUT]
       Name tail
       Path /var/log/containers/*.log
-      Parser cri
+      Parser containerd
       Tag kube.*
       Mem_Buf_Limit 5MB
       Skip_Long_Lines On
@@ -132,3 +132,11 @@ fluentbit_customParsers: |
       Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
       Time_Key    time
       Time_Format %b %d %H:%M:%S
+
+  [PARSER]
+      Name containerd
+      Format regex
+      Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+      Time_Key time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+      Time_Keep On
