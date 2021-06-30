@@ -97,6 +97,9 @@
               - effect: NoSchedule
                 key: "{{ elastic_app_taint }}"
 
+- name: Wait for ElasticSearch and kibana pods become ready
+  command: "kubectl wait --namespace={{ logging_namespace }} --for=condition=Ready --all pods --timeout=900s"
+
 - name: Wait for elasticsearch user secret creating
   command: "kubectl get secret -n {{ logging_namespace }}"
   register: es_secret
@@ -194,3 +197,6 @@
     namespace: "{{ prometheus_stack_namespace }}"
     validate:
       fail_on_error: yes      
+
+- name: Wait for Fluentbit pods become ready
+  command: "kubectl wait --namespace={{ logging_namespace }} --for=condition=Ready --all pods --timeout=600s"
