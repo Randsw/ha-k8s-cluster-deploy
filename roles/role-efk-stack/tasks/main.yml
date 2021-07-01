@@ -34,6 +34,9 @@
       config:
         metricsPort: 8088
 
+- name: Wait for Elastic Operator pods become ready
+  command: "kubectl wait --namespace={{ elastic_namespace }} --for=condition=Ready --all pods --timeout=900s"
+
 - name: Create {{ logging_namespace }} namespace
   community.kubernetes.k8s:
     state: present
