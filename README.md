@@ -17,14 +17,17 @@ Deploy HA kubernetes cluster with 3 contol-plane nodes, 3 worker nodes and 2 GW 
    * [Kubernetes High Availability](#kubernetes-high-availability)
    * [LoadBalancer Service](#loadbalancer-service)
    * [Storage class](#storage-class)
+   * [Monitoring](#monitoring)
+   * [Logging](#logging)
    * [Example application](#example-application)
 3. [Cluster Installation](#cluster-installation)
 4. [Cluster Configuration](#cluster-configuration)
    * [Hosts](#hosts)
    * [Kubernetes](#kubernetes)
    * [Hashicorp Vault](#hashicorp-vault)
+   * [Monitoring Configuration](#monitoring-configuration)
+   * [Logging Configuration](#logging-configuration)
    * [Example Application Configuration](#example-application-configuration)
-
 
 ## Requirements
 
@@ -72,13 +75,9 @@ Each control plane node runs an instance of the kube-apiserver, kube-scheduler, 
 From kubernets documentation:
 
 > Each of master replicas will run the following components in the following mode:
-
 > * etcd instance: all instances will be clustered together using consensus;
-
 > * API server: each server will talk to local etcd - all API servers in the cluster will be available;
-
 > * controllers, scheduler, and cluster auto-scaler: will use lease mechanism - only one instance of each of them will be active in the cluster;
-
 > * add-on manager: each manager will work independently trying to keep add-ons in sync.
 
 ![HA control-plane](images/ha-master-gce.png)
@@ -106,6 +105,19 @@ In this realisation Metallb work in Layer2 mode.
 [Local Path Provisioner](https://github.com/rancher/local-path-provisioner) provides a way for the Kubernetes users to utilize the local storage in each node. Based on the user configuration, the Local Path Provisioner will create hostPath based persistent volume on the node automatically. It utilizes the features introduced by **Kubernetes Local Persistent Volume** feature, but make it a simpler solution than the built-in local volume feature in Kubernetes. Currently the **Kubernetes Local Volume provisioner** cannot do dynamic provisioning for the local volumes.
 
 With **Local Path Provisioner** we can create dynamic provisioning the volume using hostPath. We  dont have to create static persistent volume. **Local Path Provisioner** do all provisioning work for us.
+
+### Monitoring
+
+[Kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
+
+### Logging
+
+Logging consists of two parts:
+
+* [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html) extends the basic Kubernetes orchestration capabilities to support the setup and management of Elasticsearch, Kibana, APM Server, Enterprise Search, and Beats on Kubernetes.
+This operator response for Elasticsearch and Kibana instance managment
+
+* [Fluentbit](https://docs.fluentbit.io/manual/) is a Fast and Lightweight Log Processor, Stream Processor and Forwarder for Linux, OSX, Windows and BSD family operating systems. It has been made with a strong focus on performance to allow the collection of events from different sources without complexity.
 
 ### Example application
 
@@ -171,6 +183,35 @@ Change `ansible_host` variable in all files in `inventories/k8s-ha-cluster/host_
 |----------------------------------------|---------------|-------------------------------------------------------------|
 |`root_ca_name`                          | "Demo Root Certificate Authority"| Name of CA
 |`root_ca_cert_filename`                 | demo-root-ca  | CA parameters filename
+
+### Monitoring Configuration
+
+| Name                                   | Default Value                | Description                                         |
+|----------------------------------------|------------------------------|-----------------------------------------------------|
+|`prometheus_stack_release_name`         |monitoring                    | Helm release name for Kube-Prometheus-Stack         |
+|`prometheus_stack_namespace`            |monitoring                    | Namespace for Kube-Prometheus-Stack                 |
+|`grafana_ingress_host`                  |monitoring                    | Grafana address                                     |
+|`prometheus_stack_taint`                |node-role.kubernetes.io/worker| Toleration for Kube-Prometheus-Stack                |
+
+### Logging Configuration
+
+| Name                                   | Default Value                | Description                                         |
+|----------------------------------------|----------------------------- |-----------------------------------------------------|
+|`elastic_operator_version`              |"1.6.0"                       | Elastic operator version                            |
+|`elastic_namespace`                     |logging                       | Namespace for Elastic operator                      |
+|`elastic_operator_taint`                |node-role.kubernetes.io/worker| Toleration for Elastic operator                     |
+|`elastic_version`                       |7.10.0                        | Elasticsearch and Kibana version                    |
+|`elastic_name`                          | elasticsearch                | Elasticsearch Custom Resource name                  |
+|`kibana_name`                           | kibana                       | Kibana Custom Resource name                         |
+|`elastic_count`                         | 1                            | Elasticsearch Custom Resource replica count         |
+|`kibana_count`                          | 1                            | Kibana Custom Resource replica count                |
+|`logging_namespace`                     | logging                      | Kibana, Elastic, Fluentbit pods namespace           |
+|`fluentbit_toleration`                  | -                            | Toleration for Flient bit                           |
+|`fluentbit_service`                     | -                            | Fluentbirt service config                           |
+|`fluentbit_inputs`                      | -                            | Fluentbirt input config                             |
+|`fluentbit_filter`                      | -                            | Fluentbirt filter config                            |
+|`fluentbit_output`                      | -                            | Fluentbirt output config                            |
+|`fluentbit_customParsers`               | -                            | Fluentbirt custom parsers                           |
 
 ### Example Application Configuration
 

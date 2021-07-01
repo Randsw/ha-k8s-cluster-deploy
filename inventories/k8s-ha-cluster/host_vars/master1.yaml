@@ -90,7 +90,7 @@ grafana_ingress_host: grafana.example.com
 #Kube-prometheus-stack pod toleration
 prometheus_stack_taint: node-role.kubernetes.io/worker
 
-########################### Cluster name ##################################################
+########################### Cluster logging variable ##################################################
 elastic_operator_version: "1.6.0"
 # Namespace for elastic-operator deploy
 elastic_namespace: elastic-operator
