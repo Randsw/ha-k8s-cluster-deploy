@@ -34,7 +34,7 @@
       config:
         metricsPort: 8088
 
-- name: Wait for pods created
+- name: Wait for pods created in {{ elastic_namespace }}
   become: false
   command: kubectl get po -A
   register: logging_po
@@ -107,6 +107,14 @@
             tolerations:
               - effect: NoSchedule
                 key: "{{ elastic_app_taint }}"
+
+- name: Wait for pods created in {{ logging_namespace }}
+  become: false
+  command: kubectl get po -A
+  register: logging_po
+  until: 'logging_po.stdout.find("{{ logging_namespace }}") != -1'
+  retries: 10
+  delay: 10
 
 - name: Wait for ElasticSearch and kibana pods become ready
   command: "kubectl wait --namespace={{ logging_namespace }} --for=condition=Ready --all pods --timeout=900s"
